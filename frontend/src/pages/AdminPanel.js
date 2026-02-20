@@ -23,6 +23,8 @@ import CustomSectionsManagement from '../components/admin/CustomSectionsManageme
 import ReviewsManagement from '../components/admin/ReviewsManagement';
 import ReturnsDashboard from '../components/admin/ReturnsDashboard';
 import PolicyDashboard from '../components/admin/PolicyDashboard';
+import PaymentHealthDashboard from '../components/admin/PaymentHealthDashboard';
+import RiskCenter from '../components/admin/RiskCenter';
 
 const AdminPanel = () => {
   const { isAdmin, loading } = useAuth();
