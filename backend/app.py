@@ -19,6 +19,7 @@ from modules.reviews import router as reviews_router
 from modules.admin import router as admin_router
 from modules.delivery import router as delivery_router
 from modules.payments import router as payments_router
+from modules.payments.payment_health_routes import router as payment_health_router
 from modules.content import router as content_router
 
 # Configure logging
@@ -64,6 +65,7 @@ app.include_router(reviews_router, prefix="/api")
 app.include_router(admin_router, prefix="/api")
 app.include_router(delivery_router, prefix="/api")
 app.include_router(payments_router, prefix="/api")
+app.include_router(payment_health_router, prefix="/api")
 app.include_router(content_router, prefix="/api")
 
 
