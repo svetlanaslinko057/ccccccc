@@ -238,8 +238,8 @@ const RiskCenter = () => {
     setLoading(true);
     try {
       const [summaryRes, customersRes] = await Promise.all([
-        api.get('/api/risk/summary'),
-        api.get('/api/risk/customers?limit=100')
+        api.get('/api/v2/admin/risk/summary'),
+        api.get('/api/v2/admin/risk/customers?limit=100')
       ]);
       setSummary(summaryRes.data);
       setCustomers(customersRes.data.customers || []);
@@ -257,7 +257,7 @@ const RiskCenter = () => {
 
   const handleRecalc = async (userId) => {
     try {
-      await api.post(`/api/risk/recalc/${userId}`);
+      await api.post(`/api/v2/admin/risk/recalc/${userId}`);
       toast.success('Ризик перераховано');
       fetchData();
     } catch (error) {
@@ -267,7 +267,7 @@ const RiskCenter = () => {
 
   const handleRecalcAll = async () => {
     try {
-      const res = await api.post('/api/risk/recalc-all?limit=100');
+      const res = await api.post('/api/v2/admin/risk/recalc-all?limit=100');
       toast.success(`Оновлено ${res.data.updated} профілів`);
       fetchData();
     } catch (error) {
@@ -277,7 +277,7 @@ const RiskCenter = () => {
 
   const handleOverride = async (userId, score, reason) => {
     try {
-      await api.post(`/api/risk/override/${userId}`, { score, reason });
+      await api.post(`/api/v2/admin/risk/override/${userId}`, { score, reason });
       toast.success('Override встановлено');
       fetchData();
     } catch (error) {

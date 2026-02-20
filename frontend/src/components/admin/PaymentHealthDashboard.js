@@ -55,7 +55,7 @@ const PaymentHealthDashboard = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await api.get(`/api/admin/payments/health?range=${range}`);
+      const response = await api.get(`/api/v2/admin/payments/health?range=${range}`);
       setData(response.data);
     } catch (error) {
       console.error('Failed to fetch payment health:', error);
