@@ -3633,6 +3633,7 @@ from modules.payments.retry.retry_routes import router as retry_router
 from modules.payments.recovery_analytics_routes import router as recovery_router
 from modules.payments.reconciliation_routes import router as recon_router
 from modules.payments.fondy_routes import router as fondy_router
+from modules.payments.payment_health_routes import router as payment_health_router
 
 app.include_router(payments_policy_router)
 app.include_router(resume_router)
@@ -3640,6 +3641,7 @@ app.include_router(retry_router)
 app.include_router(recovery_router)
 app.include_router(recon_router)
 app.include_router(fondy_router)
+app.include_router(payment_health_router, prefix="/api", tags=["Payment Health Dashboard"])
 
 app.add_middleware(
     CORSMiddleware,
