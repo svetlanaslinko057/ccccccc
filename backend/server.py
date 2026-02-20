@@ -3643,6 +3643,10 @@ app.include_router(recon_router)
 app.include_router(fondy_router)
 app.include_router(payment_health_router, prefix="/api", tags=["Payment Health Dashboard"])
 
+# Risk routes also on /api for frontend compatibility
+from modules.risk.risk_routes import router as risk_api_router
+app.include_router(risk_api_router, prefix="/api", tags=["Risk Center"])
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
