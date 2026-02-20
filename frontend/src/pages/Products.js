@@ -1,0 +1,328 @@
+import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { productsAPI, categoriesAPI } from '../utils/api';
+import ProductCardCompact from '../components/ProductCardCompact';
+import { Button } from '../components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { Slider } from '../components/ui/slider';
+import { Label } from '../components/ui/label';
+import { Filter, X, Grid, List, ArrowUpDown, ChevronDown, ChevronRight, Search } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
+
+const Products = () => {
+  const { t } = useLanguage();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
+  const [priceRange, setPriceRange] = useState([0, 1000]);
+  const [sortBy, setSortBy] = useState('newest');
+  const [viewMode, setViewMode] = useState('grid');
+  const [expandedCategories, setExpandedCategories] = useState([]);
+  const [categorySearch, setCategorySearch] = useState('');
+
+  const search = searchParams.get('search') || '';
+  const categoryId = searchParams.get('category') || '';
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [search, categoryId, sortBy]);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await categoriesAPI.getAll();
+      setCategories(response.data);
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
+    }
+  };
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const params = {};
+      if (search) params.search = search;
+      if (categoryId) params.category_id = categoryId;
+      if (priceRange[0] > 0) params.min_price = priceRange[0];
+      if (priceRange[1] < 1000) params.max_price = priceRange[1];
+      if (sortBy) params.sort_by = sortBy;
+      
+      const response = await productsAPI.getAll(params);
+      setProducts(response.data);
+    } catch (error) {
+      console.error('Failed to fetch products:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCategoryChange = (catId) => {
+    if (catId === categoryId) {
+      searchParams.delete('category');
+    } else {
+      searchParams.set('category', catId);
+    }
+    setSearchParams(searchParams);
+  };
+
+  const toggleCategory = (catId) => {
+    setExpandedCategories(prev => 
+      prev.includes(catId) 
+        ? prev.filter(id => id !== catId)
+        : [...prev, catId]
+    );
+  };
+
+  const handleSortChange = (value) => {
+    setSortBy(value);
+  };
+
+  const clearFilters = () => {
+    setSearchParams({});
+    setPriceRange([0, 1000]);
+    setSortBy('newest');
+  };
+
+  const filteredCategories = categories.filter(cat => 
+    cat.name.toLowerCase().includes(categorySearch.toLowerCase())
+  );
+
+  return (
+    <div className="min-h-screen bg-[#F7F7F7]">
+      {/* Compact Header */}
+      <div className="bg-white border-b border-gray-200 py-4">
+        <div className="container-main">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold">
+              {search ? `${t('searchResults')}: "${search}"` : t('catalogTitle')}
+            </h1>
+            <Button
+              variant="outline"
+              onClick={() => setShowFilters(!showFilters)}
+              className="lg:hidden"
+            >
+              <Filter className="w-4 h-4 mr-2" />
+              {t('filters')}
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="container-main py-6">
+        <div className="flex gap-6">
+          {/* Left Sidebar - Filters */}
+          <div className={`${
+            showFilters ? 'block' : 'hidden'
+          } lg:block w-full lg:w-80 flex-shrink-0`}>
+            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden sticky top-6">
+              {/* Price Filter */}
+              <div className="p-6 border-b border-gray-200">
+                <h3 className="font-bold text-lg mb-4">{t('priceLabel')}</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      value={priceRange[0]}
+                      onChange={(e) => setPriceRange([parseInt(e.target.value) || 0, priceRange[1]])}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                      placeholder={t('from')}
+                    />
+                    <span>—</span>
+                    <input
+                      type="number"
+                      value={priceRange[1]}
+                      onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value) || 1000])}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                      placeholder={t('to')}
+                    />
+                  </div>
+                  <Slider
+                    min={0}
+                    max={1000}
+                    step={10}
+                    value={priceRange}
+                    onValueChange={setPriceRange}
+                  />
+                  <Button
+                    onClick={fetchProducts}
+                    className="w-full bg-green-600 hover:bg-green-700"
+                  >
+                    {t('apply')}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Categories Filter */}
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-lg">{t('section')}</h3>
+                  {categoryId && (
+                    <button
+                      onClick={() => handleCategoryChange('')}
+                      className="text-sm text-blue-600 hover:text-blue-700"
+                    >
+                      {t('reset')}
+                    </button>
+                  )}
+                </div>
+
+                {/* Category Search */}
+                <div className="relative mb-4">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    value={categorySearch}
+                    onChange={(e) => setCategorySearch(e.target.value)}
+                    placeholder={t('search')}
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg"
+                  />
+                </div>
+
+                {/* Categories List */}
+                <div className="space-y-1 max-h-[500px] overflow-y-auto">
+                  {filteredCategories.map((category) => (
+                    <div key={category.id}>
+                      <div
+                        className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors ${
+                          categoryId === category.id
+                            ? 'bg-blue-50 text-blue-700'
+                            : 'hover:bg-gray-50'
+                        }`}
+                      >
+                        <div 
+                          className="flex items-center gap-3 flex-1"
+                          onClick={() => handleCategoryChange(category.id)}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={categoryId === category.id}
+                            onChange={() => handleCategoryChange(category.id)}
+                            className="w-4 h-4"
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                          <span className="flex-1 text-sm font-medium">
+                            {category.name}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {products.filter(p => p.category_id === category.id).length}
+                          </span>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleCategory(category.id);
+                          }}
+                          className="p-1 hover:bg-gray-200 rounded"
+                        >
+                          {expandedCategories.includes(category.id) ? (
+                            <ChevronDown className="w-4 h-4" />
+                          ) : (
+                            <ChevronRight className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
+                      
+                      {/* Subcategories placeholder */}
+                      {expandedCategories.includes(category.id) && (
+                        <div className="ml-6 mt-1 space-y-1">
+                          <div className="text-xs text-gray-500 p-2">
+                            {t('subcategories')}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Content - Products */}
+          <div className="flex-1">
+            {/* Toolbar */}
+            <div className="bg-white rounded-2xl border border-gray-200 p-4 mb-6">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  {/* Sort */}
+                  <Select value={sortBy} onValueChange={handleSortChange}>
+                    <SelectTrigger className="w-[200px]">
+                      <ArrowUpDown className="w-4 h-4 mr-2" />
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="popularity">{t('sortByPopularity')}</SelectItem>
+                      <SelectItem value="newest">{t('newest')}</SelectItem>
+                      <SelectItem value="price_asc">{t('priceLowToHigh')}</SelectItem>
+                      <SelectItem value="price_desc">{t('priceHighToLow')}</SelectItem>
+                      <SelectItem value="rating">{t('byRating')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* View Mode */}
+                <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className={`p-2 rounded transition-colors ${
+                      viewMode === 'grid'
+                        ? 'bg-white shadow-sm'
+                        : 'hover:bg-gray-200'
+                    }`}
+                  >
+                    <Grid className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`p-2 rounded transition-colors ${
+                      viewMode === 'list'
+                        ? 'bg-white shadow-sm'
+                        : 'hover:bg-gray-200'
+                    }`}
+                  >
+                    <List className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Results count */}
+              <div className="mt-3 text-sm text-gray-600">
+                {t('foundProducts')}: <span className="font-semibold">{products.length}</span>
+              </div>
+            </div>
+
+            {/* Products Grid */}
+            {loading ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0071E3]"></div>
+              </div>
+            ) : products.length === 0 ? (
+              <div className="text-center py-20 bg-white rounded-2xl">
+                <p className="text-gray-600 text-lg">{t('noProductsFound')}</p>
+              </div>
+            ) : (
+              <div className={viewMode === 'grid' 
+                ? 'grid grid-cols-1 xs:grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6'
+                : 'space-y-4'
+              }>
+                {products.map((product) => (
+                  <ProductCardCompact 
+                    key={product.id} 
+                    product={product} 
+                    viewMode={viewMode}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Products;
