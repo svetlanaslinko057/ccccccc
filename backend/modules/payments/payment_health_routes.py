@@ -6,10 +6,10 @@ from core.db import db
 from core.security import get_current_admin
 from modules.payments.payment_health_service import PaymentHealthService
 
-router = APIRouter(prefix="/payments", tags=["Payment Health"])
+router = APIRouter(tags=["Payment Health"])
 
 
-@router.get("/health")
+@router.get("/payments/health")
 async def get_payment_health(
     range: int = Query(7, ge=1, le=90, description="Days range"),
     current_user: dict = Depends(get_current_admin)
