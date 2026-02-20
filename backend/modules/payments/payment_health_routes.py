@@ -6,7 +6,7 @@ from core.db import db
 from core.security import get_current_admin
 from modules.payments.payment_health_service import PaymentHealthService
 
-router = APIRouter(prefix="/admin/payments", tags=["Admin Payments"])
+router = APIRouter(prefix="/payments", tags=["Payment Health"])
 
 
 @router.get("/health")
