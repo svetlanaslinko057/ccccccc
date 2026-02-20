@@ -358,6 +358,12 @@ const AdminPanel = () => {
         {/* Policy Tab (O20.5 & O20.6) */}
         {activeTab === 'policy' && <PolicyDashboard />}
 
+        {/* Payment Health Dashboard */}
+        {activeTab === 'payment-health' && <PaymentHealthDashboard />}
+
+        {/* Risk Center */}
+        {activeTab === 'risk-center' && <RiskCenter />}
+
         {/* Users Tab */}
         {activeTab === 'users' && (
           <div className="bg-white rounded-2xl p-6 border border-gray-200">
