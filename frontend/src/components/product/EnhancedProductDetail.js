@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { 
   Star, Heart, GitCompare, ShoppingCart, Share2, ChevronRight, ChevronUp,
-  Truck, CreditCard, Shield, Clock, CheckCircle, Package, Info
+  Truck, CreditCard, Shield, Clock, CheckCircle, Package, Info, Eye, AlertTriangle
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCart } from '../../contexts/CartContext';
@@ -19,6 +19,7 @@ import ProductImageGallery from './ProductImageGallery';
 import ReviewForm from './ReviewForm';
 import ProductComments from './ProductComments';
 import ShareModal from '../ShareModal';
+import { trackProductView, trackAddToCart } from '../../lib/track';
 
 const EnhancedProductDetail = () => {
   const { id } = useParams();
@@ -35,11 +36,21 @@ const EnhancedProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
   const [showShareModal, setShowShareModal] = useState(false);
+  
+  // Social proof - live viewers
+  const [viewers] = useState(Math.floor(Math.random() * 15) + 5);
 
   useEffect(() => {
     fetchProduct();
     fetchReviews();
   }, [id]);
+  
+  // Track product view
+  useEffect(() => {
+    if (product) {
+      trackProductView(id, product.title, product.price);
+    }
+  }, [product, id]);
 
   const fetchProduct = async () => {
     try {
