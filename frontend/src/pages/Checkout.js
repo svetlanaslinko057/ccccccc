@@ -215,7 +215,21 @@ const Checkout = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Phone format mask
+  const formatPhone = (value) => {
+    const digits = value.replace(/\D/g, '');
+    if (digits.length <= 2) return `+${digits}`;
+    if (digits.length <= 5) return `+${digits.slice(0,2)} ${digits.slice(2)}`;
+    if (digits.length <= 8) return `+${digits.slice(0,2)} ${digits.slice(2,5)} ${digits.slice(5)}`;
+    if (digits.length <= 10) return `+${digits.slice(0,2)} ${digits.slice(2,5)} ${digits.slice(5,8)} ${digits.slice(8)}`;
+    return `+${digits.slice(0,2)} ${digits.slice(2,5)} ${digits.slice(5,8)} ${digits.slice(8,10)} ${digits.slice(10,12)}`;
+  };
+
   const handleInputChange = (field, value) => {
+    // Apply phone formatting
+    if (field === 'phone') {
+      value = formatPhone(value);
+    }
     setRecipientData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
@@ -223,6 +237,9 @@ const Checkout = () => {
   };
 
   const handlePlaceOrder = async () => {
+    // Prevent double-click
+    if (isProcessingPayment) return;
+    
     if (!validateForm()) {
       toast.error('Будь ласка, заповніть всі обов\'язкові поля');
       return;
