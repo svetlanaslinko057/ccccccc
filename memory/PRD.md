@@ -1,88 +1,117 @@
 # Y-Store Marketplace - PRD
 
 ## Original Problem Statement
-Реалізувати A/B Simulator та Monte Carlo симуляцію для аналізу оптимальної знижки до реального трафіку
-
-## What's Been Implemented
-
-### 2026-02-21 (Session 2)
-
-**A/B Simulator** (`/app/backend/modules/ab/ab_simulator.py`)
-- Детерміністична симуляція без реального трафіку
-- Розрахунок: revenue, discount_cost, gross_margin, return_losses, net_profit
-- Break-even analysis для кожного варіанту
-
-**Monte Carlo Simulation** (`/app/backend/modules/ab/ab_monte_carlo.py`)
-- 2000-5000 прогонів з випадковим шумом (±2% конверсія, ±5% чек)
-- Статистика: mean_profit, std_dev, p10/p50/p90
-- Winner probability distribution
-- Risk-adjusted profit (Sharpe-like metric)
-- Автоматичні рекомендації українською
-
-**API Endpoints:**
-- `POST /api/v2/admin/ab/simulate` - базова симуляція
-- `POST /api/v2/admin/ab/monte-carlo` - Monte Carlo
-- `POST /api/v2/admin/ab/quick-estimate` - швидкий break-even
-
-## Simulation Results
-
-### Scenario 1: Normal conditions
-- margin_rate: 41%
-- base_paid_rate: 68%
-- elasticity: 0.6
-- **Winner: Control (0%)** - знижка не потрібна
-
-### Scenario 2: High margin + Low conversion
-- margin_rate: 60%
-- base_paid_rate: 40%
-- elasticity: 2.0
-- **Winner: C (1.5%)** з ймовірністю 100%
-- Додатковий прибуток: +12,080 грн
-
-## Key Insights
-
-1. При марже 41% і хорошій конверсії (68%) - знижка "з'їдає" маржу
-2. Знижка працює коли:
-   - Маржа висока (>50%)
-   - Base paid_rate низький (<50%)
-   - Elasticity висока (>1.5)
-3. Рекомендовані варіанти для тестування: 0%, 1%, 1.5% (без 2%)
-
-## Test Results
-- Backend: 100% passed
-- All simulation endpoints working
-- Recommendation logic verified
-
-## Experiment Configuration
-```json
-{
-  "id": "prepaid_discount_v1",
-  "variants": [
-    {"key": "A", "discount_pct": 0.0, "weight": 34},
-    {"key": "B", "discount_pct": 1.0, "weight": 33},
-    {"key": "C", "discount_pct": 1.5, "weight": 33}
-  ]
-}
-```
+Поднять фронтенд, бэкенд, MongoDB из двух GitHub репозиториев:
+- https://github.com/svetlanaslinko057/fhfjfjgfjg (основной)
+- https://github.com/svetlanaslinko057/ccccc1 (дополнительные модули)
 
 ## Architecture Summary
 
-### Modules Created
-- `/app/backend/modules/revenue/` - ROE (Semi-Auto, Rollback, Impact Estimator)
-- `/app/backend/modules/ab/` - A/B Testing + Simulator + Monte Carlo
+### Tech Stack
+- **Backend**: FastAPI (Python 3.11)
+- **Frontend**: React 19 + Tailwind CSS
+- **Database**: MongoDB (motor async driver)
+- **Bot**: Aiogram 3.x (Telegram Admin Bot)
+- **Payments**: Fondy
+- **Delivery**: Nova Poshta API
 
-### Frontend Components
-- `RevenueControl.js` - ROE dashboard
-- `ABTests.js` - A/B testing UI
-- AdminPanel tabs: Revenue, A/B Tests
+### Key Integrations
+- **Telegram Bot**: @YStore_a_bot (8239151803:AAFBBuflCH5JPWUxwN9UfifCeHgS6cqxYTg)
+- **Nova Poshta API**: 5cb1e3ebc23e75d737fd57c1e056ecc9
+- **Fondy**: Merchant ID 1558123
 
-## Next Action Items
-1. Інтегрувати A/B assignment в order creation flow
-2. Зібрати реальні дані 10-14 днів
-3. Порівняти симуляцію з реальними результатами
-4. Multi-armed bandit auto-weights (опціонально)
+### Backend Modules (25+)
+- auth - JWT authentication
+- orders - Order management & state machine
+- payments - Fondy integration, webhooks, retry logic
+- delivery - Nova Poshta TTN, tracking
+- returns - Return engine, policies
+- risk - Customer risk scoring
+- guard - Fraud detection, KPI alerts
+- ab - A/B testing, Monte Carlo simulation
+- revenue - Revenue optimization engine
+- crm - Customer management, timeline
+- bot - Telegram admin bot
+- automation - Automated workflows
+- analytics_intel - Analytics intelligence
+- notifications - SMS, Email providers
+- pickup_control - Return prevention
 
-## Future Backlog
-- Frontend UI для симуляторів
-- Visualization графіків Monte Carlo distribution
-- Sensitivity analysis (вплив зміни параметрів)
+### Frontend Pages
+- Home, Products, ProductDetail
+- Cart, Checkout, CheckoutSuccess
+- UserProfile, Favorites, Comparison
+- AdminPanel (18 tabs)
+- DeliveryPayment, ExchangeReturn, ContactInfo
+
+### Admin Panel Tabs
+1. Аналітика
+2. Користувачі
+3. Категорії
+4. Товари
+5. Виплати
+6. Замовлення
+7. Розширена аналітика
+8. Слайдер
+9. CRM
+10. Акції
+11. Популярні категорії
+12. Кастомні розділи
+13. Відгуки
+14. Повернення
+15. Policy
+16. Payment Health
+17. Risk Center
+18. A/B Tests
+
+## What's Been Implemented
+
+### 2026-02-21 - Initial Setup
+- Cloned both repositories
+- Backend running on port 8001
+- Frontend running on port 3000
+- Telegram Bot @YStore_a_bot active
+- MongoDB connected
+- All keys configured
+
+## Pending Tasks (from user)
+
+### P0 - Content Updates
+- [ ] Адрес: проспект Миколи Бажана, 24/1, Київ, 02149
+- [ ] Доставка безкоштовна від 2000 грн
+- [ ] Видалити "Банківський переказ"
+- [ ] Сторінка "Обмін та повернення" - повний контент
+
+### P1 - Product Page V2
+- [ ] Галерея зображень (з превью)
+- [ ] Вибір варіацій (колір/пам'ять/розмір)
+- [ ] Sticky buy-блок
+- [ ] Характеристики (таблиця)
+- [ ] Блок "Купують разом"
+- [ ] Відгуки
+- [ ] SEO текст
+- [ ] Trust block
+
+### P2 - Checkout V2
+- [ ] One Page checkout
+- [ ] Nova Poshta live API
+- [ ] Risk detection (Smart Payment Policy)
+- [ ] Fondy redirect
+- [ ] Resume flow
+
+## Second Repository Modules (ccccc1)
+Available for integration:
+- `modules/checkout/` - V2 Checkout flow with DTOs
+- `modules/pages/` - Page Builder admin
+- `modules/security/` - Production hardening
+  - Rate limiting (in-memory + Redis-ready)
+  - 2FA (TOTP)
+  - Anti-abuse (honeypot, timing, flood)
+  - Webhook protection
+  - Session management
+  - Security alerts
+
+## Future/Backlog
+- Performance layer (CDN, Redis, indexes)
+- Mobile App / PWA
+- Multi-armed bandit A/B tests
