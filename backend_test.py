@@ -1160,8 +1160,8 @@ class YStoreAPITester:
 
     def run_all_tests(self):
         """Run all test scenarios"""
-        print("🚀 Starting Y-Store Marketplace Backend Tests")
-        print("🎯 Testing Payment Health Dashboard, Risk Center, Prepaid Discount")
+        print("🚀 Starting Y-Store ROE & A/B Testing Backend Tests")
+        print("🎯 Testing Revenue Optimization Engine & A/B Testing Features")
         print("=" * 80)
         
         # Basic connectivity and authentication
@@ -1172,7 +1172,24 @@ class YStoreAPITester:
         # Test authentication requirements
         self.test_admin_authentication_required()
         
-        # NEW REQUIREMENTS TESTING
+        # === NEW ROE & A/B REQUIREMENTS TESTING ===
+        
+        # ROE (Revenue Optimization Engine) tests
+        print(f"\n{'='*20} ROE (Revenue Optimization Engine) Tests {'='*20}")
+        self.test_revenue_settings()
+        self.test_revenue_config() 
+        self.test_revenue_optimize_run()
+        self.test_revenue_suggestions()
+        
+        # A/B Testing Engine tests
+        print(f"\n{'='*20} A/B Testing Engine Tests {'='*20}")
+        self.test_ab_seed_prepaid_discount()
+        self.test_ab_experiments_list()
+        self.test_ab_assignment()
+        self.test_ab_report()
+        
+        # Previous features testing
+        print(f"\n{'='*20} Previous Features Tests {'='*20}")
         self.test_payment_health_dashboard()
         self.test_risk_center_apis()
         self.test_prepaid_discount_env_config()
