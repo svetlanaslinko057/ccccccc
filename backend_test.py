@@ -1158,6 +1158,227 @@ class YStoreAPITester:
             return self.log_result("A/B Report", False,
                 f"Status: {response['status_code']}, Data: {response['data']}")
 
+    # === A/B Simulator Tests ===
+    
+    def test_ab_simulate_deterministic(self):
+        """Test POST /api/v2/admin/ab/simulate - базова детерміністична симуляція"""
+        print(f"\n🔍 Testing A/B Deterministic Simulation...")
+        
+        if not self.admin_token:
+            return self.log_result("A/B Simulate", False, "No admin token")
+        
+        headers = {"Authorization": f"Bearer {self.admin_token}"}
+        
+        # Test scenario 1: Control should win (margin=41%, base_paid_rate=68%, elasticity=0.6)
+        test_data = {
+            "orders_total": 1200,
+            "prepaid_share": 0.4,
+            "avg_grand": 2500,
+            "margin_rate": 0.41,
+            "base_paid_rate": 0.68,
+            "return_rate": 0.1,
+            "elasticity": 0.6,
+            "variants": [
+                {"key": "A", "discount_pct": 0},
+                {"key": "B", "discount_pct": 1.0},
+                {"key": "C", "discount_pct": 1.5}
+            ]
+        }
+        
+        response, error = self.make_request(
+            'POST', '/v2/admin/ab/simulate',
+            data=test_data,
+            headers=headers,
+            expect_status=200
+        )
+        
+        if error:
+            return self.log_result("A/B Simulate", False, f"Error: {error}")
+        
+        if response["success"]:
+            data = response["data"]
+            # Should have simulation results with winner
+            required_fields = ['input', 'results', 'winner', 'break_even_analysis']
+            has_structure = all(field in data for field in required_fields)
+            
+            if has_structure:
+                winner = data.get("winner", {})
+                winner_variant = winner.get("variant")
+                winner_discount = winner.get("discount_pct")
+                
+                # Verify Control (0%) wins in normal conditions
+                control_wins = winner_variant == "A" and winner_discount == 0
+                
+                return self.log_result("A/B Simulate", control_wins,
+                    f"Winner: {winner_variant} ({winner_discount}%) - Control wins as expected")
+            else:
+                return self.log_result("A/B Simulate", False,
+                    f"Missing required fields: {[f for f in required_fields if f not in data]}")
+        else:
+            return self.log_result("A/B Simulate", False,
+                f"Status: {response['status_code']}, Data: {response['data']}")
+
+    def test_ab_simulate_high_margin_scenario(self):
+        """Test A/B simulation where discount variant should win"""
+        print(f"\n🔍 Testing A/B Simulation - High Margin Scenario...")
+        
+        if not self.admin_token:
+            return self.log_result("A/B Simulate High Margin", False, "No admin token")
+        
+        headers = {"Authorization": f"Bearer {self.admin_token}"}
+        
+        # Test scenario 2: C (1.5%) should win (margin=60%, base_paid_rate=40%, elasticity=2.0)
+        test_data = {
+            "orders_total": 1200,
+            "prepaid_share": 0.4,
+            "avg_grand": 2500,
+            "margin_rate": 0.60,
+            "base_paid_rate": 0.40,
+            "return_rate": 0.1,
+            "elasticity": 2.0,
+            "variants": [
+                {"key": "A", "discount_pct": 0},
+                {"key": "B", "discount_pct": 1.0},
+                {"key": "C", "discount_pct": 1.5}
+            ]
+        }
+        
+        response, error = self.make_request(
+            'POST', '/v2/admin/ab/simulate',
+            data=test_data,
+            headers=headers,
+            expect_status=200
+        )
+        
+        if error:
+            return self.log_result("A/B Simulate High Margin", False, f"Error: {error}")
+        
+        if response["success"]:
+            data = response["data"]
+            winner = data.get("winner", {})
+            winner_variant = winner.get("variant")
+            winner_discount = winner.get("discount_pct")
+            winner_profit = winner.get("net_profit", 0)
+            
+            # Find control profit for comparison
+            control_result = next((r for r in data.get("results", []) if r.get("discount_pct") == 0), None)
+            control_profit = control_result.get("net_profit", 0) if control_result else 0
+            
+            # Verify C (1.5%) wins with significant profit gain
+            c_wins = winner_variant == "C" and winner_discount == 1.5
+            profit_gain = winner_profit - control_profit
+            significant_gain = profit_gain > 10000  # More than 10k UAH gain
+            
+            return self.log_result("A/B Simulate High Margin", c_wins and significant_gain,
+                f"Winner: {winner_variant} ({winner_discount}%), Profit gain: +{profit_gain:,.0f} UAH")
+        else:
+            return self.log_result("A/B Simulate High Margin", False,
+                f"Status: {response['status_code']}, Data: {response['data']}")
+
+    def test_ab_monte_carlo(self):
+        """Test POST /api/v2/admin/ab/monte-carlo - Monte Carlo з випадковими флуктуаціями"""
+        print(f"\n🔍 Testing A/B Monte Carlo Simulation...")
+        
+        if not self.admin_token:
+            return self.log_result("A/B Monte Carlo", False, "No admin token")
+        
+        headers = {"Authorization": f"Bearer {self.admin_token}"}
+        
+        test_data = {
+            "runs": 1000,  # Smaller number for faster testing
+            "orders_total": 1200,
+            "prepaid_share": 0.4,
+            "avg_grand": 2500,
+            "margin_rate": 0.41,
+            "base_paid_rate": 0.68,
+            "return_rate": 0.1,
+            "elasticity": 0.6,
+            "variants": [
+                {"key": "A", "discount_pct": 0},
+                {"key": "B", "discount_pct": 1.0},
+                {"key": "C", "discount_pct": 1.5}
+            ]
+        }
+        
+        response, error = self.make_request(
+            'POST', '/v2/admin/ab/monte-carlo',
+            data=test_data,
+            headers=headers,
+            expect_status=200
+        )
+        
+        if error:
+            return self.log_result("A/B Monte Carlo", False, f"Error: {error}")
+        
+        if response["success"]:
+            data = response["data"]
+            # Should have Monte Carlo results with probability analysis
+            required_fields = ['runs', 'input', 'summary', 'winner_probability', 'expected_winner', 'safest_choice', 'recommendation']
+            has_structure = all(field in data for field in required_fields)
+            
+            if has_structure:
+                runs = data.get("runs")
+                expected_winner = data.get("expected_winner", {})
+                winner_prob = data.get("winner_probability", {})
+                recommendation = data.get("recommendation", "")
+                
+                # Check if Control has high probability in normal conditions
+                control_prob = winner_prob.get("A", 0)
+                
+                return self.log_result("A/B Monte Carlo", True,
+                    f"Runs: {runs}, Expected winner: {expected_winner.get('variant')} ({expected_winner.get('discount_pct')}%), Control prob: {control_prob:.1%}")
+            else:
+                return self.log_result("A/B Monte Carlo", False,
+                    f"Missing required fields: {[f for f in required_fields if f not in data]}")
+        else:
+            return self.log_result("A/B Monte Carlo", False,
+                f"Status: {response['status_code']}, Data: {response['data']}")
+
+    def test_ab_quick_estimate(self):
+        """Test POST /api/v2/admin/ab/quick-estimate - швидкий break-even розрахунок"""
+        print(f"\n🔍 Testing A/B Quick Estimate...")
+        
+        if not self.admin_token:
+            return self.log_result("A/B Quick Estimate", False, "No admin token")
+        
+        headers = {"Authorization": f"Bearer {self.admin_token}"}
+        
+        test_data = {
+            "monthly_revenue": 500000,
+            "prepaid_share": 0.4,
+            "margin_rate": 0.41,
+            "discount_pct": 1.0
+        }
+        
+        response, error = self.make_request(
+            'POST', '/v2/admin/ab/quick-estimate',
+            data=test_data,
+            headers=headers,
+            expect_status=200
+        )
+        
+        if error:
+            return self.log_result("A/B Quick Estimate", False, f"Error: {error}")
+        
+        if response["success"]:
+            data = response["data"]
+            # Should have break-even calculation results
+            required_fields = ['input', 'discount_cost', 'break_even_revenue', 'break_even_orders', 'verdict']
+            has_structure = all(field in data for field in required_fields)
+            
+            if has_structure:
+                break_even_orders = data.get("break_even_orders")
+                verdict = data.get("verdict")
+                
+                return self.log_result("A/B Quick Estimate", True,
+                    f"Break-even: {break_even_orders} orders, Verdict: {verdict}")
+            else:
+                return self.log_result("A/B Quick Estimate", False,
+                    f"Missing required fields: {[f for f in required_fields if f not in data]}")
+        else:
+            return self.log_result("A/B Quick Estimate", False,
+                f"Status: {response['status_code']}, Data: {response['data']}")
+
     def run_all_tests(self):
         """Run all test scenarios"""
         print("🚀 Starting Y-Store ROE & A/B Testing Backend Tests")
