@@ -53,6 +53,14 @@ class UpdateStatusRequest(BaseModel):
     reason: Optional[str] = None
 
 
+class ABAssignment(BaseModel):
+    """A/B test assignment info stored with order"""
+    exp_id: Optional[str] = None
+    variant: Optional[str] = None
+    discount_pct: Optional[float] = None
+    active: bool = False
+
+
 class OrderResponse(BaseModel):
     id: str
     user_id: str
@@ -65,6 +73,8 @@ class OrderResponse(BaseModel):
     subtotal: float
     shipping_cost: float = 0
     total: float
+    discount: Optional[dict] = None
+    ab: Optional[ABAssignment] = None
     notes: Optional[str] = None
     status_history: List[dict] = []
     created_at: datetime
