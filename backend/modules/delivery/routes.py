@@ -7,7 +7,7 @@ import aiohttp
 
 from core.config import settings
 
-router = APIRouter(prefix="/delivery", tags=["Delivery"])
+router = APIRouter(prefix="/api/delivery", tags=["Delivery"])
 
 NP_API_URL = "https://api.novaposhta.ua/v2.0/json/"
 
