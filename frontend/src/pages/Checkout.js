@@ -382,6 +382,9 @@ const Checkout = () => {
   const selectedDelivery = deliveryOptions.find(opt => opt.id === deliveryMethod);
   const deliveryPrice = selectedDelivery?.price || 0;
   const totalWithDelivery = cartTotal + deliveryPrice;
+  const FREE_DELIVERY_THRESHOLD = 2000;
+  const needForFreeDelivery = FREE_DELIVERY_THRESHOLD - cartTotal;
+  const isFreeDeliveryEligible = cartTotal >= FREE_DELIVERY_THRESHOLD;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 py-12">
@@ -391,7 +394,30 @@ const Checkout = () => {
             Оформлення замовлення
           </h1>
           <p className="text-gray-600 text-lg">Крок 1 з 2 - Введіть дані доставки</p>
+          
+          {/* Cart Timer - Urgency */}
+          <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 rounded-xl text-amber-800">
+            <Clock className="w-4 h-4" />
+            <span className="text-sm font-medium">Ваш кошик збережено на 15 хвилин</span>
+          </div>
         </div>
+
+        {/* Free Delivery Upsell */}
+        {!isFreeDeliveryEligible && needForFreeDelivery > 0 && (
+          <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl">
+            <p className="text-green-800 font-medium">
+              🚚 Додайте товарів ще на <span className="font-bold">{needForFreeDelivery.toFixed(0)} грн</span> і отримайте <span className="font-bold">безкоштовну доставку!</span>
+            </p>
+          </div>
+        )}
+        
+        {isFreeDeliveryEligible && (
+          <div className="mb-6 p-4 bg-gradient-to-r from-green-100 to-emerald-100 border border-green-300 rounded-2xl">
+            <p className="text-green-800 font-bold">
+              ✅ Безкоштовна доставка застосована!
+            </p>
+          </div>
+        )}
 
         <div className="flex gap-8">
           {/* Left Column - Forms */}
