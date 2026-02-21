@@ -1,79 +1,97 @@
 # Y-Store Marketplace - PRD
 
 ## Original Problem Statement
-Реалізувати 3 компоненти:
-1. Payment Health Dashboard - моніторинг платіжної системи
-2. Prepaid Discount - знижка за онлайн оплату
-3. Risk Center - UI для управління ризиками клієнтів
+Реалізувати Revenue Optimization Engine (ROE) з:
+1. ROE v1 Semi-Auto - snapshot + suggestions + apply + cooldown
+2. ROE v1.1 Auto-Rollback - автовідкат якщо метрики гірші
+3. ROE v1.2 Impact Estimator - оцінка cost vs uplift
+4. A/B Discount Test Engine - когорти A/B/C/D з різними % знижки
 
 ## Architecture
 
-### Backend (FastAPI + MongoDB)
-- `/app/backend/server.py` - Main server with all routes
-- `/app/backend/modules/payments/` - Payment system
-  - `payment_health_service.py` - Health metrics aggregation
-  - `payment_health_routes.py` - API endpoint
-  - `prepaid_discount.py` - Discount calculator
-- `/app/backend/modules/risk/` - Risk Engine
-  - `risk_service.py` - Risk score calculation (0-100)
-  - `risk_routes.py` - API endpoints
+### Revenue Optimization Engine (ROE)
+- `/app/backend/modules/revenue/`
+  - `revenue_settings.py` - конфігурація ROE (mode, cooldown, thresholds)
+  - `revenue_snapshot_service.py` - збір метрик кожні 6 годин
+  - `revenue_optimizer_rules.py` - правила прийняття рішень
+  - `revenue_optimizer_service.py` - створення suggestions
+  - `revenue_rollback_service.py` - авто-rollback якщо метрики гірші
+  - `revenue_impact_estimator.py` - cost vs uplift розрахунки
+  - `revenue_routes.py` - API endpoints
+  - `revenue_jobs.py` - cron jobs
 
-### Frontend (React + Tailwind)
-- `/app/frontend/src/pages/AdminPanel.js` - Admin with new tabs
-- `/app/frontend/src/components/admin/`
-  - `PaymentHealthDashboard.js` - KPI cards + charts
-  - `RiskCenter.js` - Customer risk management
+### A/B Testing Module
+- `/app/backend/modules/ab/`
+  - `ab_service.py` - стабільне призначення когорт (hash-based)
+  - `ab_report_service.py` - звіти по варіантах
+  - `ab_routes.py` - API endpoints
+
+### Frontend Components
+- `RevenueControl.js` - ROE dashboard (settings, config, suggestions, snapshots)
+- `ABTests.js` - A/B тестування (experiments, reports, winner detection)
 
 ## What's Been Implemented
 
 ### 2026-02-21
-- ✅ Payment Health Dashboard backend (`/api/v2/admin/payments/health`)
-  - Webhook success rate, reconciliation fixes
-  - Retry recovery rate, deposit conversion
-  - Prepaid conversion, discount analytics
-  - Daily trend data
-- ✅ Prepaid Discount system (env configurable)
-  - PREPAID_DISCOUNT_ENABLED=true
-  - PREPAID_DISCOUNT_VALUE=1%
-  - PREPAID_DISCOUNT_MAX_UAH=300
-- ✅ Risk Center backend APIs
-  - `/api/v2/admin/risk/summary`
-  - `/api/v2/admin/risk/customers`
-  - `/api/v2/admin/risk/recalc/{user_id}`
-  - `/api/v2/admin/risk/override/{user_id}`
-- ✅ Frontend components created
-  - PaymentHealthDashboard.js
-  - RiskCenter.js
-- ✅ Admin Panel tabs added
+- ✅ ROE v1 Semi-Auto
+  - Settings: mode, cooldown_hours, max_discount_step, max_deposit_step
+  - Config: prepaid_discount_value, deposit_min_uah, risk_threshold_high
+  - Snapshot: orders, paid, decline_rate, return_rate, prepaid_conversion
+  - Suggestions: PENDING → APPROVED → APPLIED → VALIDATED/ROLLED_BACK
+  - Rules: DECLINE_HIGH, RETURNS_HIGH, PREPAID_CONV_LOW, RECOVERY_LOW
 
-## API Testing Results
-- Payment Health API: ✅ Working (returns metrics)
-- Risk Summary API: ✅ Working (returns distribution)
-- Risk Customers API: ✅ Working (returns list)
-- All require admin JWT authentication
+- ✅ ROE v1.1 Auto-Rollback
+  - Guardrails: paid_drop > 2%, margin_drop > 2%, return_rise > 2%
+  - Monitoring window: 24 hours after apply
+  - Auto-rollback to previous config if metrics worsen
 
-## Test Credentials
-- Email: admin@ystore.com
-- Password: admin123
-- Role: admin
+- ✅ ROE v1.2 Impact Estimator
+  - Discount cost calculation
+  - Expected uplift based on elasticity
+  - Net effect estimation
 
-## Environment Variables
-```
-PREPAID_DISCOUNT_ENABLED=true
-PREPAID_DISCOUNT_MODE=PERCENT
-PREPAID_DISCOUNT_VALUE=1
-PREPAID_DISCOUNT_APPLY_TO=FULL_PREPAID
-PREPAID_DISCOUNT_MAX_UAH=300
-PREPAID_DISCOUNT_MIN_ORDER=500
-```
+- ✅ A/B Discount Test Engine
+  - Experiment: prepaid_discount_v1
+  - Variants: A (0%), B (1%), C (1.5%), D (2%)
+  - Stable assignment by phone hash
+  - Report: paid_rate, net_effect, winner detection
+
+## API Endpoints
+
+### Revenue API
+- GET /api/v2/admin/revenue/settings
+- PATCH /api/v2/admin/revenue/settings
+- GET /api/v2/admin/revenue/config
+- PATCH /api/v2/admin/revenue/config
+- POST /api/v2/admin/revenue/snapshot/run
+- GET /api/v2/admin/revenue/snapshots
+- POST /api/v2/admin/revenue/optimize/run
+- GET /api/v2/admin/revenue/suggestions
+- POST /api/v2/admin/revenue/suggestions/{sid}/approve
+- POST /api/v2/admin/revenue/suggestions/{sid}/apply
+- POST /api/v2/admin/revenue/suggestions/{sid}/reject
+- POST /api/v2/admin/revenue/impact/estimate
+
+### A/B Test API
+- GET /api/v2/admin/ab/experiments
+- POST /api/v2/admin/ab/experiments
+- POST /api/v2/admin/ab/seed/prepaid-discount
+- GET /api/v2/admin/ab/assignment
+- GET /api/v2/admin/ab/report
+
+## Test Results
+- Backend: 97% (39/40 tests passed)
+- All ROE APIs working
+- All A/B APIs working
+- Frontend components created
 
 ## Next Action Items
-1. Test frontend after preview activation
-2. Add seed data for better testing
-3. Integrate prepaid discount into order flow
+1. Wait for preview activation to test frontend
+2. Integrate A/B assignment into order creation flow
+3. Add Multi-armed bandit weights optimization
 
 ## Future Backlog
-- Dynamic discount (1% → 2% if decline grows)
-- A/B test discount
-- City Risk Heatmap
-- Risk Actions Engine (auto-tag, SMS template)
+- Bandit auto-weights update
+- Dynamic COD limit based on risk
+- City Risk Heatmap visualization
+- SMS confirmation for high-risk orders
