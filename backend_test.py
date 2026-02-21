@@ -923,6 +923,241 @@ class YStoreAPITester:
         except Exception as e:
             return self.log_result("Prepaid Discount Config", False, f"Error reading .env: {e}")
 
+    # === ROE (Revenue Optimization Engine) Tests ===
+    
+    def test_revenue_settings(self):
+        """Test GET /api/v2/admin/revenue/settings"""
+        print(f"\n🔍 Testing ROE Settings...")
+        
+        if not self.admin_token:
+            return self.log_result("ROE Settings", False, "No admin token")
+        
+        headers = {"Authorization": f"Bearer {self.admin_token}"}
+        
+        response, error = self.make_request(
+            'GET', '/v2/admin/revenue/settings',
+            headers=headers,
+            expect_status=200
+        )
+        
+        if error:
+            return self.log_result("ROE Settings", False, f"Error: {error}")
+        
+        if response["success"]:
+            data = response["data"]
+            # Should have ROE configuration settings
+            expected_fields = ['mode', 'cooldown_hours', 'rollback_window_hours']
+            has_settings = any(field in data for field in expected_fields)
+            return self.log_result("ROE Settings", has_settings,
+                f"Settings: {data}")
+        else:
+            return self.log_result("ROE Settings", False,
+                f"Status: {response['status_code']}, Data: {response['data']}")
+
+    def test_revenue_config(self):
+        """Test GET /api/v2/admin/revenue/config"""
+        print(f"\n🔍 Testing ROE Current Config...")
+        
+        if not self.admin_token:
+            return self.log_result("ROE Config", False, "No admin token")
+        
+        headers = {"Authorization": f"Bearer {self.admin_token}"}
+        
+        response, error = self.make_request(
+            'GET', '/v2/admin/revenue/config',
+            headers=headers,
+            expect_status=200
+        )
+        
+        if error:
+            return self.log_result("ROE Config", False, f"Error: {error}")
+        
+        if response["success"]:
+            data = response["data"]
+            # Should have current system configuration
+            expected_fields = ['prepaid_discount_value', 'deposit_min_uah']
+            has_config = any(field in data for field in expected_fields)
+            return self.log_result("ROE Config", has_config,
+                f"Config: discount={data.get('prepaid_discount_value')}%, deposit={data.get('deposit_min_uah')}₴")
+        else:
+            return self.log_result("ROE Config", False,
+                f"Status: {response['status_code']}, Data: {response['data']}")
+
+    def test_revenue_optimize_run(self):
+        """Test POST /api/v2/admin/revenue/optimize/run"""
+        print(f"\n🔍 Testing ROE Optimization Run...")
+        
+        if not self.admin_token:
+            return self.log_result("ROE Optimize Run", False, "No admin token")
+        
+        headers = {"Authorization": f"Bearer {self.admin_token}"}
+        
+        response, error = self.make_request(
+            'POST', '/v2/admin/revenue/optimize/run',
+            data={"range_days": 7},
+            headers=headers,
+            expect_status=200
+        )
+        
+        if error:
+            return self.log_result("ROE Optimize Run", False, f"Error: {error}")
+        
+        if response["success"]:
+            data = response["data"]
+            # Should have optimization results and snapshot
+            has_result = "snapshot" in data and ("suggestion" in data or "skipped" in data)
+            return self.log_result("ROE Optimize Run", has_result,
+                f"Result: {data.get('skipped', 'suggestion created')}, Orders: {data.get('snapshot', {}).get('orders_total', 0)}")
+        else:
+            return self.log_result("ROE Optimize Run", False,
+                f"Status: {response['status_code']}, Data: {response['data']}")
+
+    def test_revenue_suggestions(self):
+        """Test GET /api/v2/admin/revenue/suggestions"""
+        print(f"\n🔍 Testing ROE Suggestions List...")
+        
+        if not self.admin_token:
+            return self.log_result("ROE Suggestions", False, "No admin token")
+        
+        headers = {"Authorization": f"Bearer {self.admin_token}"}
+        
+        response, error = self.make_request(
+            'GET', '/v2/admin/revenue/suggestions?limit=20',
+            headers=headers,
+            expect_status=200
+        )
+        
+        if error:
+            return self.log_result("ROE Suggestions", False, f"Error: {error}")
+        
+        if response["success"]:
+            data = response["data"]
+            # Should have suggestions list
+            has_structure = "items" in data
+            items = data.get("items", [])
+            return self.log_result("ROE Suggestions", has_structure,
+                f"Found {len(items)} suggestions")
+        else:
+            return self.log_result("ROE Suggestions", False,
+                f"Status: {response['status_code']}, Data: {response['data']}")
+
+    # === A/B Testing Engine Tests ===
+    
+    def test_ab_seed_prepaid_discount(self):
+        """Test POST /api/v2/admin/ab/seed/prepaid-discount"""
+        print(f"\n🔍 Testing A/B Seed Prepaid Discount...")
+        
+        if not self.admin_token:
+            return self.log_result("A/B Seed Experiment", False, "No admin token")
+        
+        headers = {"Authorization": f"Bearer {self.admin_token}"}
+        
+        response, error = self.make_request(
+            'POST', '/v2/admin/ab/seed/prepaid-discount',
+            headers=headers,
+            expect_status=200
+        )
+        
+        if error:
+            return self.log_result("A/B Seed Experiment", False, f"Error: {error}")
+        
+        if response["success"]:
+            data = response["data"]
+            # Should create prepaid_discount_v1 experiment
+            has_experiment = "exp_id" in data and data.get("exp_id") == "prepaid_discount_v1"
+            return self.log_result("A/B Seed Experiment", has_experiment,
+                f"Created experiment: {data.get('exp_id')}")
+        else:
+            return self.log_result("A/B Seed Experiment", False,
+                f"Status: {response['status_code']}, Data: {response['data']}")
+
+    def test_ab_experiments_list(self):
+        """Test GET /api/v2/admin/ab/experiments"""
+        print(f"\n🔍 Testing A/B Experiments List...")
+        
+        if not self.admin_token:
+            return self.log_result("A/B Experiments List", False, "No admin token")
+        
+        headers = {"Authorization": f"Bearer {self.admin_token}"}
+        
+        response, error = self.make_request(
+            'GET', '/v2/admin/ab/experiments',
+            headers=headers,
+            expect_status=200
+        )
+        
+        if error:
+            return self.log_result("A/B Experiments List", False, f"Error: {error}")
+        
+        if response["success"]:
+            data = response["data"]
+            # Should have experiments list
+            has_structure = "items" in data
+            items = data.get("items", [])
+            return self.log_result("A/B Experiments List", has_structure,
+                f"Found {len(items)} experiments")
+        else:
+            return self.log_result("A/B Experiments List", False,
+                f"Status: {response['status_code']}, Data: {response['data']}")
+
+    def test_ab_assignment(self):
+        """Test GET /api/v2/admin/ab/assignment?exp_id=prepaid_discount_v1&phone=380991234567"""
+        print(f"\n🔍 Testing A/B Cohort Assignment...")
+        
+        if not self.admin_token:
+            return self.log_result("A/B Assignment", False, "No admin token")
+        
+        headers = {"Authorization": f"Bearer {self.admin_token}"}
+        
+        response, error = self.make_request(
+            'GET', '/v2/admin/ab/assignment?exp_id=prepaid_discount_v1&phone=380991234567',
+            headers=headers,
+            expect_status=200
+        )
+        
+        if error:
+            return self.log_result("A/B Assignment", False, f"Error: {error}")
+        
+        if response["success"]:
+            data = response["data"]
+            # Should have assignment details
+            required_fields = ['exp_id', 'unit', 'variant', 'discount_pct', 'active']
+            has_assignment = all(field in data for field in required_fields)
+            return self.log_result("A/B Assignment", has_assignment,
+                f"Assigned to variant {data.get('variant')} with {data.get('discount_pct')}% discount")
+        else:
+            return self.log_result("A/B Assignment", False,
+                f"Status: {response['status_code']}, Data: {response['data']}")
+
+    def test_ab_report(self):
+        """Test A/B experiment reporting"""
+        print(f"\n🔍 Testing A/B Report...")
+        
+        if not self.admin_token:
+            return self.log_result("A/B Report", False, "No admin token")
+        
+        headers = {"Authorization": f"Bearer {self.admin_token}"}
+        
+        response, error = self.make_request(
+            'GET', '/v2/admin/ab/report?exp_id=prepaid_discount_v1&range_days=14',
+            headers=headers,
+            expect_status=200
+        )
+        
+        if error:
+            return self.log_result("A/B Report", False, f"Error: {error}")
+        
+        if response["success"]:
+            data = response["data"]
+            # Should have experiment report structure
+            expected_fields = ['exp', 'total_orders', 'total_paid', 'rows']
+            has_report = all(field in data for field in expected_fields)
+            return self.log_result("A/B Report", has_report,
+                f"Report: {data.get('total_orders', 0)} orders, {len(data.get('rows', []))} variants")
+        else:
+            return self.log_result("A/B Report", False,
+                f"Status: {response['status_code']}, Data: {response['data']}")
+
     def run_all_tests(self):
         """Run all test scenarios"""
         print("🚀 Starting Y-Store Marketplace Backend Tests")
