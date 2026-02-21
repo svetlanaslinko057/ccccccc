@@ -1,69 +1,79 @@
 # Y-Store Marketplace - PRD
 
 ## Original Problem Statement
-Поднять фронт, бэк, базу данных MongoDB, клонировать репозиторий, изучить текущий код, изучить последние обновления + админка
+Реалізувати 3 компоненти:
+1. Payment Health Dashboard - моніторинг платіжної системи
+2. Prepaid Discount - знижка за онлайн оплату
+3. Risk Center - UI для управління ризиками клієнтів
 
 ## Architecture
 
 ### Backend (FastAPI + MongoDB)
-- `/app/backend/server.py` - Main legacy server
-- `/app/backend/app.py` - Modular app v2
-- `/app/backend/modules/` - Feature modules:
-  - `auth` - JWT authentication
-  - `products` - Products & categories
-  - `orders` - Order management with state machine
-  - `payments` - Fondy integration (checkout, webhooks, reconciliation)
-  - `delivery` - Nova Poshta API (TTN automation)
-  - `risk` - Risk Score Engine (0-100)
-  - `returns` - Returns management
-  - `guard` - Fraud/KPI monitoring
-  - `bot` - Telegram Admin Bot
-  - `crm` - Customer relationship management
-  - `analytics_intel` - Analytics engine
+- `/app/backend/server.py` - Main server with all routes
+- `/app/backend/modules/payments/` - Payment system
+  - `payment_health_service.py` - Health metrics aggregation
+  - `payment_health_routes.py` - API endpoint
+  - `prepaid_discount.py` - Discount calculator
+- `/app/backend/modules/risk/` - Risk Engine
+  - `risk_service.py` - Risk score calculation (0-100)
+  - `risk_routes.py` - API endpoints
 
-### Frontend (React + Tailwind + shadcn/ui)
-- `/app/frontend/src/App.js` - Main app
-- `/app/frontend/src/pages/AdminPanel.js` - Admin dashboard
-- `/app/frontend/src/components/admin/` - Admin components:
-  - AnalyticsDashboard, ProductManagement, OrdersAnalytics
-  - PolicyDashboard, ReturnsDashboard, CRMDashboard
-  - GuardIncidents, PickupControl
-
-### Payment Policy (D-Mode)
-- FULL_PREPAID - online payment only
-- SHIP_DEPOSIT - deposit required for COD
-- COD_ALLOWED - standard COD
+### Frontend (React + Tailwind)
+- `/app/frontend/src/pages/AdminPanel.js` - Admin with new tabs
+- `/app/frontend/src/components/admin/`
+  - `PaymentHealthDashboard.js` - KPI cards + charts
+  - `RiskCenter.js` - Customer risk management
 
 ## What's Been Implemented
 
-### 2026-02-20
-- ✅ Repository cloned and configured
-- ✅ Backend running (FastAPI on port 8001)
-- ✅ Frontend running (React on port 3000)
-- ✅ MongoDB connected
-- ✅ Telegram Bot @YStore_a_bot running
-- ✅ Fondy payment integration configured
-- ✅ Nova Poshta API configured
+### 2026-02-21
+- ✅ Payment Health Dashboard backend (`/api/v2/admin/payments/health`)
+  - Webhook success rate, reconciliation fixes
+  - Retry recovery rate, deposit conversion
+  - Prepaid conversion, discount analytics
+  - Daily trend data
+- ✅ Prepaid Discount system (env configurable)
+  - PREPAID_DISCOUNT_ENABLED=true
+  - PREPAID_DISCOUNT_VALUE=1%
+  - PREPAID_DISCOUNT_MAX_UAH=300
+- ✅ Risk Center backend APIs
+  - `/api/v2/admin/risk/summary`
+  - `/api/v2/admin/risk/customers`
+  - `/api/v2/admin/risk/recalc/{user_id}`
+  - `/api/v2/admin/risk/override/{user_id}`
+- ✅ Frontend components created
+  - PaymentHealthDashboard.js
+  - RiskCenter.js
+- ✅ Admin Panel tabs added
 
-## Prioritized Backlog
+## API Testing Results
+- Payment Health API: ✅ Working (returns metrics)
+- Risk Summary API: ✅ Working (returns distribution)
+- Risk Customers API: ✅ Working (returns list)
+- All require admin JWT authentication
 
-### P0 - Critical (Current Sprint)
-1. Payment Health Dashboard - backend endpoint + Admin UI
-2. Prepaid Discount system - FULL_PREPAID incentive
-3. Risk Engine UI - Risk Center in admin panel
+## Test Credentials
+- Email: admin@ystore.com
+- Password: admin123
+- Role: admin
 
-### P1 - Important
-- A/B testing for Prepaid Discount
-- Dynamic COD Limit
+## Environment Variables
+```
+PREPAID_DISCOUNT_ENABLED=true
+PREPAID_DISCOUNT_MODE=PERCENT
+PREPAID_DISCOUNT_VALUE=1
+PREPAID_DISCOUNT_APPLY_TO=FULL_PREPAID
+PREPAID_DISCOUNT_MAX_UAH=300
+PREPAID_DISCOUNT_MIN_ORDER=500
+```
+
+## Next Action Items
+1. Test frontend after preview activation
+2. Add seed data for better testing
+3. Integrate prepaid discount into order flow
+
+## Future Backlog
+- Dynamic discount (1% → 2% if decline grows)
+- A/B test discount
 - City Risk Heatmap
-
-### P2 - Nice to Have
-- Advanced fraud detection
-- Automated customer segmentation
-- Push notifications
-
-## API Keys Configured
-- TELEGRAM_BOT_TOKEN: ✅
-- NOVAPOSHTA_API_KEY: ✅
-- FONDY_MERCHANT_ID/PASSWORD: ✅
-- EMERGENT_LLM_KEY: ✅
+- Risk Actions Engine (auto-tag, SMS template)
