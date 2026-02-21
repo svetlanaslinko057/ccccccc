@@ -66,6 +66,33 @@
 
 ## What's Been Implemented
 
+### 2026-02-21 - Checkout V2 & Performance & Growth COMPLETED
+**Checkout V2 One-Page:**
+- [x] Nova Poshta Live API - расчёт стоимости доставки в реальном времени
+- [x] Free delivery threshold 2000 грн с автоматическим применением
+- [x] Phone mask formatting (+380 XX XXX XX XX)
+- [x] Trust block с гарантиями
+- [x] Upsell блок для бесплатной доставки
+
+**Performance Optimization:**
+- [x] MongoDB compound indexes (products, orders, carts)
+- [x] Products index: category_id + status + created_at
+- [x] Orders index: phone + created_at, status + payment_status
+- [x] Carts index: updated_at + converted
+
+**Growth Automation:**
+- [x] Background scheduler запущен каждые 10 минут
+- [x] Abandoned cart recovery (60 min threshold)
+- [x] Payment recovery reminders (30 min threshold)
+- [x] Post-purchase review requests (3 days after delivery)
+- [x] Telegram broadcast to segments API
+
+**New API Endpoints:**
+- POST /api/delivery/v2/calculate - Live delivery cost with free threshold
+- POST /api/v2/growth/broadcast/send - Send Telegram broadcast
+
+**Testing:** Backend 100%, Frontend 70%
+
 ### 2026-02-21 - P1 Production Upgrade COMPLETED
 **Backend Modules Added:**
 - [x] Analytics Module (DIL) - Event tracking, funnel analytics
