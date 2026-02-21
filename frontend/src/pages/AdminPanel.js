@@ -321,6 +321,30 @@ const AdminPanel = () => {
             <span className="hidden sm:inline">Risk Center</span>
             <span className="sm:hidden">⚠️</span>
           </button>
+          <button
+            onClick={() => setActiveTab('revenue')}
+            className={`px-5 py-3 font-bold rounded-2xl transition-all duration-300 whitespace-nowrap text-sm md:text-base flex items-center gap-2 ${
+              activeTab === 'revenue'
+                ? 'bg-gradient-to-r from-purple-600 to-violet-600 text-white shadow-xl scale-105'
+                : 'bg-white text-gray-600 hover:bg-gray-50 hover:scale-105 shadow-md'
+            }`}
+          >
+            <Target className="w-4 h-4 md:w-5 md:h-5" />
+            <span className="hidden sm:inline">Revenue</span>
+            <span className="sm:hidden">🎯</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('ab-tests')}
+            className={`px-5 py-3 font-bold rounded-2xl transition-all duration-300 whitespace-nowrap text-sm md:text-base flex items-center gap-2 ${
+              activeTab === 'ab-tests'
+                ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-xl scale-105'
+                : 'bg-white text-gray-600 hover:bg-gray-50 hover:scale-105 shadow-md'
+            }`}
+          >
+            <FlaskConical className="w-4 h-4 md:w-5 md:h-5" />
+            <span className="hidden sm:inline">A/B Tests</span>
+            <span className="sm:hidden">🧪</span>
+          </button>
           </div>
         </div>
 
