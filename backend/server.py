@@ -1115,6 +1115,74 @@ async def create_product(
     await db.products.insert_one(prod_doc)
     return product
 
+# Seed products for testing (no auth required)
+@api_router.post("/seed/products")
+async def seed_products():
+    """Seed sample products for testing"""
+    import re
+    
+    sample_products = [
+        {
+            "title": "iPhone 15 Pro Max 256GB",
+            "description": "Найпотужніший iPhone з титановим корпусом, A17 Pro чіпом та покращеною камерою.",
+            "category_id": "smartphones",
+            "price": 59999,
+            "compare_price": 64999,
+            "stock_level": 3,
+            "images": ["https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=500"],
+            "status": "published"
+        },
+        {
+            "title": "Samsung Galaxy S24 Ultra",
+            "description": "Флагман Samsung з AI функціями, S Pen та неперевершеною камерою 200MP.",
+            "category_id": "smartphones",
+            "price": 54999,
+            "compare_price": 59999,
+            "stock_level": 8,
+            "images": ["https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=500"],
+            "status": "published"
+        },
+        {
+            "title": "MacBook Pro 14 M3 Pro",
+            "description": "Професійний ноутбук Apple з чіпом M3 Pro, 18 ГБ памʼяті та дисплеєм Liquid Retina XDR.",
+            "category_id": "laptops",
+            "price": 99999,
+            "compare_price": 109999,
+            "stock_level": 2,
+            "images": ["https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=500"],
+            "status": "published"
+        },
+        {
+            "title": "AirPods Pro 2",
+            "description": "Бездротові навушники з активним шумопоглинанням, адаптивним еквалайзером та USB-C зарядкою.",
+            "category_id": "accessories",
+            "price": 9999,
+            "compare_price": 11499,
+            "stock_level": 15,
+            "images": ["https://images.unsplash.com/photo-1606741965326-cb990ae01bb2?w=500"],
+            "status": "published"
+        }
+    ]
+    
+    created = 0
+    for prod_data in sample_products:
+        # Check if product already exists
+        existing = await db.products.find_one({"title": prod_data["title"]})
+        if existing:
+            continue
+            
+        slug_base = re.sub(r'[^a-z0-9]+', '-', prod_data["title"].lower()).strip('-')
+        prod_data["slug"] = f"{slug_base}-{str(uuid.uuid4())[:8]}"
+        prod_data["id"] = str(uuid.uuid4())
+        prod_data["seller_id"] = "system"
+        prod_data["created_at"] = datetime.now(timezone.utc).isoformat()
+        prod_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+        
+        await db.products.insert_one(prod_data)
+        created += 1
+    
+    return {"message": f"Seeded {created} products", "total": len(sample_products)}
+
 @api_router.patch("/products/{product_id}", response_model=Product)
 async def update_product(
     product_id: str,
