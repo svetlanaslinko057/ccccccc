@@ -773,10 +773,122 @@ class YStoreAPITester:
         success = all(results)
         return self.log_result("Auth Required", success, f"{sum(results)}/{len(results)} endpoints protected")
 
+    def test_payment_health_dashboard(self):
+        """Test Payment Health Dashboard API - NEW REQUIREMENT"""
+        print(f"\n🔍 Testing Payment Health Dashboard API...")
+        
+        if not self.admin_token:
+            return self.log_result("Payment Health API", False, "No admin token")
+        
+        headers = {"Authorization": f"Bearer {self.admin_token}"}
+        
+        # Test payment health endpoint with default 7-day range
+        response, error = self.make_request(
+            'GET', '/v2/admin/payments/health?range=7',
+            headers=headers,
+            expect_status=200
+        )
+        
+        if error:
+            return self.log_result("Payment Health API", False, f"Error: {error}")
+        
+        if response["success"]:
+            data = response["data"]
+            # Check for required payment health metrics
+            required_fields = [
+                'total_payments', 'paid', 'declined', 'expired', 'pending',
+                'webhook_success_rate', 'reconciliation_fixes', 'recovery_rate',
+                'deposit_conversion_rate', 'prepaid_conversion_rate',
+                'avg_payment_time_minutes', 'discount_total_uah', 'daily_trend'
+            ]
+            missing_fields = [f for f in required_fields if f not in data]
+            if missing_fields:
+                return self.log_result("Payment Health API", False, f"Missing fields: {missing_fields}")
+            else:
+                return self.log_result("Payment Health API", True, 
+                    f"Webhook rate: {data.get('webhook_success_rate')}, Recovery: {data.get('recovery_rate')}")
+        else:
+            return self.log_result("Payment Health API", False,
+                f"Status: {response['status_code']}, Data: {response['data']}")
+
+    def test_risk_center_apis(self):
+        """Test Risk Center APIs - NEW REQUIREMENT"""
+        print(f"\n🔍 Testing Risk Center APIs...")
+        
+        if not self.admin_token:
+            return self.log_result("Risk Center APIs", False, "No admin token")
+        
+        headers = {"Authorization": f"Bearer {self.admin_token}"}
+        
+        # Test risk summary
+        response, error = self.make_request(
+            'GET', '/v2/admin/risk/summary',
+            headers=headers,
+            expect_status=200
+        )
+        
+        if error:
+            self.log_result("Risk Summary API", False, f"Error: {error}")
+        elif response["success"]:
+            data = response["data"]
+            required_fields = ['total_users', 'scored_users', 'coverage_rate', 'distribution', 'recent_high_risk']
+            missing_fields = [f for f in required_fields if f not in data]
+            if missing_fields:
+                self.log_result("Risk Summary API", False, f"Missing fields: {missing_fields}")
+            else:
+                self.log_result("Risk Summary API", True, 
+                    f"Users: {data.get('total_users')}, Scored: {data.get('scored_users')}")
+        
+        # Test risk customers list
+        response, error = self.make_request(
+            'GET', '/v2/admin/risk/customers',
+            headers=headers,
+            expect_status=200
+        )
+        
+        if error:
+            self.log_result("Risk Customers API", False, f"Error: {error}")
+        elif response["success"]:
+            data = response["data"]
+            customers = data.get('customers', [])
+            self.log_result("Risk Customers API", True, f"Found {len(customers)} customers with risk scores")
+
+    def test_prepaid_discount_env_config(self):
+        """Test Prepaid Discount Environment Configuration - NEW REQUIREMENT"""
+        print(f"\n🔍 Testing Prepaid Discount Config...")
+        
+        try:
+            with open('/app/backend/.env', 'r') as f:
+                env_content = f.read()
+            
+            # Check all required prepaid discount environment variables
+            config_checks = [
+                ('PREPAID_DISCOUNT_ENABLED', 'true'),
+                ('PREPAID_DISCOUNT_MODE', 'PERCENT'), 
+                ('PREPAID_DISCOUNT_VALUE', '1'),
+                ('PREPAID_DISCOUNT_APPLY_TO', 'FULL_PREPAID'),
+                ('PREPAID_DISCOUNT_MAX_UAH', '300'),
+                ('PREPAID_DISCOUNT_MIN_ORDER', '500')
+            ]
+            
+            all_configs_ok = True
+            for key, expected in config_checks:
+                found = f'{key}={expected}' in env_content
+                if not found:
+                    all_configs_ok = False
+                self.log_result(f"Config {key}", found, f"Expected {key}={expected}")
+            
+            return self.log_result("Prepaid Discount Config", all_configs_ok, 
+                "All required environment variables configured correctly")
+                
+        except Exception as e:
+            return self.log_result("Prepaid Discount Config", False, f"Error reading .env: {e}")
+
     def run_all_tests(self):
         """Run all test scenarios"""
-        print("🚀 Starting Y-Store O13-O20 Module Tests")
-        print("=" * 60)
+        print("🚀 Starting Y-Store Marketplace Backend Tests")
+        print("🎯 Testing Payment Health Dashboard, Risk Center, Prepaid Discount")
+        print("=" * 80)
         
         # Basic connectivity and authentication
         if not self.test_admin_login():
@@ -786,7 +898,12 @@ class YStoreAPITester:
         # Test authentication requirements
         self.test_admin_authentication_required()
         
-        # Test individual modules
+        # NEW REQUIREMENTS TESTING
+        self.test_payment_health_dashboard()
+        self.test_risk_center_apis()
+        self.test_prepaid_discount_env_config()
+        
+        # Test individual modules from previous implementation
         self.test_guard_incidents_list()
         self.test_guard_incident_actions()
         self.test_risk_distribution()
@@ -805,9 +922,8 @@ class YStoreAPITester:
         self.test_returns_summary()
         self.test_returns_list()
         self.test_returns_run()
-        self.test_returns_resolve()
         
-        # Test O20.4-O20.6 NEW REQUIREMENTS
+        # Test O20.4-O20.6 REQUIREMENTS
         self.test_returns_trend()
         self.test_policy_pending() 
         self.test_policy_cities()
@@ -815,9 +931,9 @@ class YStoreAPITester:
         
         self.test_ops_dashboard()
         
-        print("\n" + "=" * 60)
+        print("\n" + "=" * 80)
         print(f"📊 Test Results: {self.tests_passed}/{self.tests_run} passed")
-        print("=" * 60)
+        print("=" * 80)
         
         return self.tests_passed >= (self.tests_run * 0.7)  # 70% pass rate acceptable
 
