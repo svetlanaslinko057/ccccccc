@@ -3647,6 +3647,14 @@ app.include_router(payment_health_router, prefix="/api/v2/admin", tags=["Payment
 from modules.risk.risk_routes import router as risk_api_router
 app.include_router(risk_api_router, prefix="/api/v2/admin", tags=["Risk Center"])
 
+# Revenue Optimization Engine (ROE)
+from modules.revenue.revenue_routes import router as revenue_router
+app.include_router(revenue_router, prefix="/api/v2/admin", tags=["Revenue Optimization"])
+
+# A/B Tests
+from modules.ab.ab_routes import router as ab_router
+app.include_router(ab_router, prefix="/api/v2/admin", tags=["A/B Tests"])
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
