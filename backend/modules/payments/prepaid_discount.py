@@ -1,6 +1,7 @@
 """
 Prepaid Discount Calculator
 Applies discount for FULL_PREPAID payments to incentivize online payment
+Supports A/B testing override for discount percentage
 """
 import os
 from typing import Optional
@@ -17,7 +18,11 @@ def _env_float(name: str, default: float) -> float:
         return default
 
 
-def calc_prepaid_discount(grand_uah: float, policy_mode: str) -> Optional[dict]:
+def calc_prepaid_discount(
+    grand_uah: float, 
+    policy_mode: str,
+    discount_pct_override: Optional[float] = None
+) -> Optional[dict]:
     """
     Calculate prepaid discount based on payment policy mode.
     
