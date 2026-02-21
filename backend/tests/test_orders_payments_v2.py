@@ -13,7 +13,7 @@ import uuid
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 if not BASE_URL:
-    BASE_URL = "https://smart-payment-core.preview.emergentagent.com"
+    BASE_URL = "https://ab-discount-lab.preview.emergentagent.com"
 
 # Test credentials from requirements
 TEST_USER_EMAIL = "test@example.com"
