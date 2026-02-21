@@ -3816,6 +3816,24 @@ async def startup_init():
     await db.customers.create_index("phone", unique=True)
     await db.customers.create_index("segment")
     
+    # Performance: Compound indexes for fast queries
+    await db.products.create_index([("category_id", 1), ("status", 1), ("created_at", -1)])
+    await db.products.create_index([("is_active", 1), ("price", 1)])
+    await db.products.create_index("slug")
+    await db.products.create_index("sku", sparse=True)
+    
+    await db.orders.create_index([("phone", 1), ("created_at", -1)])
+    await db.orders.create_index([("status", 1), ("payment_status", 1)])
+    await db.orders.create_index([("user_id", 1), ("status", 1)])
+    
+    # Growth: Abandoned cart indexes
+    await db.carts.create_index([("updated_at", 1), ("converted", 1)])
+    await db.carts.create_index("phone")
+    
+    # Notifications indexes
+    await db.notifications.create_index([("type", 1), ("status", 1)])
+    await db.notifications.create_index("created_at")
+    
     logger.info("✅ Production indexes created")
     
     # O1+O2: Start background jobs scheduler
@@ -3825,6 +3843,14 @@ async def startup_init():
         logger.info("✅ Background jobs scheduler started")
     except Exception as e:
         logger.error(f"Failed to start jobs scheduler: {e}")
+    
+    # Start Growth Automation scheduler
+    try:
+        from modules.growth.scheduler import start_growth_scheduler
+        start_growth_scheduler(db)
+        logger.info("✅ Growth automation scheduler started")
+    except Exception as e:
+        logger.warning(f"Growth scheduler not started: {e}")
 
 
 @app.on_event("shutdown")
