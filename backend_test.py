@@ -1409,6 +1409,13 @@ class YStoreAPITester:
         self.test_ab_assignment()
         self.test_ab_report()
         
+        # A/B Simulator Tests - NEW REQUIREMENTS
+        print(f"\n{'='*20} A/B Simulator Tests {'='*20}")
+        self.test_ab_simulate_deterministic()
+        self.test_ab_simulate_high_margin_scenario()
+        self.test_ab_monte_carlo()
+        self.test_ab_quick_estimate()
+        
         # Previous features testing
         print(f"\n{'='*20} Previous Features Tests {'='*20}")
         self.test_payment_health_dashboard()
