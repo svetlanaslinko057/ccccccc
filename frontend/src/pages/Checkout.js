@@ -416,7 +416,12 @@ const Checkout = () => {
   };
 
   const selectedDelivery = deliveryOptions.find(opt => opt.id === deliveryMethod);
-  const deliveryPrice = selectedDelivery?.price || 0;
+  
+  // Use live calculated delivery price for Nova Poshta, otherwise use static
+  const deliveryPrice = deliveryMethod === 'nova-poshta' && deliveryCalc 
+    ? (deliveryCalc.is_free ? 0 : deliveryCalc.final_cost)
+    : (isFreeDeliveryEligible ? 0 : (selectedDelivery?.price || 0));
+    
   const totalWithDelivery = cartTotal + deliveryPrice;
   const FREE_DELIVERY_THRESHOLD = 2000;
   const needForFreeDelivery = FREE_DELIVERY_THRESHOLD - cartTotal;
