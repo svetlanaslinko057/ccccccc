@@ -3653,7 +3653,9 @@ app.include_router(revenue_router, prefix="/api/v2/admin", tags=["Revenue Optimi
 
 # A/B Tests
 from modules.ab.ab_routes import router as ab_router
+from modules.ab.ab_simulator_routes import router as ab_sim_router
 app.include_router(ab_router, prefix="/api/v2/admin", tags=["A/B Tests"])
+app.include_router(ab_sim_router, prefix="/api/v2/admin/ab", tags=["A/B Simulation"])
 
 app.add_middleware(
     CORSMiddleware,
