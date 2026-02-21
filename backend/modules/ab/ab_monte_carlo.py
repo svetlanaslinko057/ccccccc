@@ -113,8 +113,11 @@ class ABMonteCarlo:
             for key, count in winner_count.items()
         }
 
+        # Sort summary by mean_profit descending
+        summary_sorted = sorted(summary, key=lambda x: x["mean_profit"], reverse=True)
+
         # Find expected winner
-        expected_winner = max(summary, key=lambda x: x["mean_profit"])
+        expected_winner = summary_sorted[0]
         safest_winner = max(summary, key=lambda x: x["risk_adjusted"])
 
         return {
@@ -128,7 +131,7 @@ class ABMonteCarlo:
                 "return_rate": return_rate,
                 "elasticity": elasticity,
             },
-            "summary": sorted(summary, key=lambda x: x["mean_profit"], reverse=True),
+            "summary": summary_sorted,
             "winner_probability": winner_prob,
             "expected_winner": {
                 "variant": expected_winner["variant"],
@@ -141,7 +144,7 @@ class ABMonteCarlo:
                 "discount_pct": safest_winner["discount_pct"],
                 "risk_adjusted_profit": safest_winner["risk_adjusted"],
             },
-            "recommendation": ABMonteCarlo._get_recommendation(summary, winner_prob),
+            "recommendation": ABMonteCarlo._get_recommendation(summary_sorted, winner_prob),
         }
 
     @staticmethod
