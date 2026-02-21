@@ -1,14 +1,8 @@
 #!/usr/bin/env python3
 """
-Backend Testing Suite for Y-Store O13-O20 Modules
-
-Tests admin APIs:
-- Guard: incidents, mute, resolve (O13-O16)
-- Risk: distribution (O17)
-- Timeline: user events (O18)
-- Analytics: KPI data, daily rebuild (O18)
-- Pickup Control: KPI, risk list, engine run, mute, reminders (O20)
-- Admin authentication
+Backend API Testing for Production Upgrade Features
+Testing: Analytics, Growth, SEO, Security modules
+Testing features: P1 Production Upgrade modules
 """
 
 import requests
