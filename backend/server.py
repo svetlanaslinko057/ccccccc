@@ -3746,6 +3746,10 @@ app.include_router(growth_router, tags=["Growth"])
 from modules.seo.routes import router as seo_router
 app.include_router(seo_router, tags=["SEO"])
 
+# Search Module (ElasticSearch)
+from modules.search.routes import router as search_router
+app.include_router(search_router, tags=["Search V2"])
+
 # Security Middleware (Rate Limiting, Anti-abuse)
 from modules.security.middleware import SecurityMiddleware
 app.add_middleware(SecurityMiddleware)
