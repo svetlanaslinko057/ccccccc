@@ -86,7 +86,7 @@ const DeliveryPayment = () => {
 
               {/* Free Delivery Banner */}
               <div className="mt-6 bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl p-6 text-white text-center">
-                <p className="text-2xl font-extrabold">🎉 Безкоштовна доставка при замовленні від 1000 грн!</p>
+                <p className="text-2xl font-extrabold">🎉 Безкоштовна доставка при замовленні від 2000 грн!</p>
               </div>
             </section>
           </ScrollReveal>
@@ -133,14 +133,6 @@ const DeliveryPayment = () => {
                       <span>Без комісії</span>
                     </li>
                   </ul>
-                </div>
-
-                {/* Bank Transfer */}
-                <div className="bg-gradient-to-br from-green-50 to-teal-50 rounded-2xl p-6 border-2 border-green-200 hover:shadow-xl transition-all">
-                  <h3 className="text-2xl font-bold text-green-900 mb-4">🏦 Банківський переказ</h3>
-                  <p className="text-gray-700 leading-relaxed">
-                    Оплата на розрахунковий рахунок (для юридичних осіб та ФОП).
-                  </p>
                 </div>
 
                 {/* LiqPay */}
