@@ -206,7 +206,7 @@ class SearchService:
         page: int, limit: int, lang: str
     ) -> Dict[str, Any]:
         """MongoDB fallback search with text index"""
-        if not self.db:
+        if self.db is None:
             return {"products": [], "total": 0, "page": page, "limit": limit}
         
         mongo_query = {"status": {"$in": ["published", "active"]}}
@@ -376,7 +376,7 @@ class SearchService:
                 logger.error(f"Autocomplete ES error: {e}")
         
         # MongoDB fallback
-        if self.db:
+        if self.db is not None:
             try:
                 cursor = self.db.products.find(
                     {
@@ -398,7 +398,7 @@ class SearchService:
     
     async def get_popular_searches(self, limit: int = 10) -> List[str]:
         """Get popular search queries"""
-        if not self.db:
+        if self.db is None:
             return []
         
         try:
@@ -416,7 +416,7 @@ class SearchService:
     
     async def log_search(self, query: str, results_count: int, user_id: Optional[str] = None):
         """Log search query for analytics"""
-        if not self.db:
+        if self.db is None:
             return
         
         try:
