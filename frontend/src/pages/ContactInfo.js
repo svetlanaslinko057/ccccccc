@@ -73,11 +73,10 @@ const ContactInfo = () => {
                   <h2 className="text-3xl font-extrabold text-gray-900">Адреса</h2>
                 </div>
                 <div className="space-y-2 text-gray-700 text-lg leading-relaxed">
-                  <p className="font-semibold">📍 Полтавська область</p>
-                  <p>Лебенський район</p>
-                  <p>с. Маяківка, вул. Моложіжна, буд. 1</p>
+                  <p className="font-semibold">📍 проспект Миколи Бажана, 24/1</p>
+                  <p>Київ, Україна, 02149</p>
                   <a 
-                    href="https://www.google.com/maps" 
+                    href="https://www.google.com/maps/dir//проспект+Миколи+Бажана,+24/1,+Київ,+02149" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="inline-block mt-4 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-bold hover:shadow-lg transition-all hover:scale-105"
