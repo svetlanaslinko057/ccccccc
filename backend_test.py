@@ -42,7 +42,7 @@ class YStoreAPITester:
         self.tests_passed = 0
         
         # Test credentials from review request
-        self.admin_email = "admin@ystore.ua"
+        self.admin_email = "admin@ystore.com"
         self.admin_password = "admin123"
         self.test_user_id = "test-user-123"  # For timeline testing
 
