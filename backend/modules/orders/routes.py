@@ -95,6 +95,7 @@ async def create_order(
     """
     Create new order from cart.
     Supports idempotency via X-Idempotency-Key header.
+    Integrates with A/B testing for prepaid discount experiments.
     """
     user_id = current_user["id"]
     
@@ -160,6 +161,40 @@ async def create_order(
     order_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc)
     
+    # --- A/B Testing Integration ---
+    # Use phone number as the unit for A/B assignment (stable across sessions)
+    ab_unit = data.shipping.phone
+    ab_assignment = None
+    discount_pct_override = None
+    discount_obj = None
+    
+    try:
+        ab_service = ABService(db)
+        assignment = await ab_service.get_assignment(AB_PREPAID_DISCOUNT_EXP_ID, ab_unit)
+        
+        if assignment and assignment.get("active"):
+            ab_assignment = {
+                "exp_id": assignment.get("exp_id"),
+                "variant": assignment.get("variant"),
+                "discount_pct": assignment.get("discount_pct"),
+                "active": True
+            }
+            discount_pct_override = assignment.get("discount_pct")
+            logger.info(f"A/B assignment for {ab_unit}: variant={assignment.get('variant')}, discount={discount_pct_override}%")
+    except Exception as e:
+        logger.warning(f"A/B assignment failed, using default: {e}")
+        ab_assignment = {"exp_id": AB_PREPAID_DISCOUNT_EXP_ID, "variant": None, "discount_pct": None, "active": False}
+    
+    # Calculate discount based on payment method and A/B variant
+    total = subtotal
+    policy_mode = "FULL_PREPAID" if data.payment_method != "cash" else "COD"
+    
+    if policy_mode == "FULL_PREPAID":
+        discount_obj = calc_prepaid_discount(subtotal, policy_mode, discount_pct_override)
+        if discount_obj:
+            total = round(subtotal - discount_obj["amount"], 2)
+            logger.info(f"Discount applied: {discount_obj['amount']} UAH ({discount_obj['value']}%)")
+    
     # Determine initial status based on payment method
     initial_status = (
         OrderStatus.AWAITING_PAYMENT 
@@ -178,7 +213,9 @@ async def create_order(
         "payment": None,
         "subtotal": subtotal,
         "shipping_cost": 0,
-        "total": subtotal,
+        "total": total,
+        "discount": discount_obj,
+        "ab": ab_assignment,
         "notes": data.notes,
         "status_history": [{
             "from": None,
