@@ -119,7 +119,7 @@ async def process_abandoned_carts():
 
 async def process_payment_recovery():
     """Send payment recovery reminders"""
-    if not _db:
+    if _db is None:
         return
     
     threshold = datetime.now(timezone.utc) - timedelta(minutes=30)
