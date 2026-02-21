@@ -214,7 +214,7 @@ const ABTests = () => {
               <VariantCard 
                 key={v.variant} 
                 variant={v} 
-                isW================================== report.winner?.by_paid_rate || report.winner?.by_net_effect === v.variant
+                isWinner={report.winner?.by_paid_rate === v.variant || report.winner?.by_net_effect === v.variant}
               />
             ))}
           </div>
