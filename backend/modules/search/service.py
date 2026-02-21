@@ -411,7 +411,7 @@ class SearchService:
             
             results = await self.db.search_logs.aggregate(pipeline).to_list(limit)
             return [r["_id"] for r in results if r["_id"]]
-        except:
+        except Exception:
             return []
     
     async def log_search(self, query: str, results_count: int, user_id: Optional[str] = None):
@@ -427,7 +427,7 @@ class SearchService:
                 "user_id": user_id,
                 "created_at": datetime.now(timezone.utc)
             })
-        except:
+        except Exception:
             pass
     
     async def index_product(self, product: Dict[str, Any]):
