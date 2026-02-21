@@ -235,6 +235,24 @@ const EnhancedProductDetail = () => {
                   </div>
                 )}
               </div>
+              
+              {/* Low Stock Warning */}
+              {product.stock_level > 0 && product.stock_level < 5 && (
+                <div className="mb-4 flex items-center gap-2 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-red-700">
+                  <AlertTriangle className="w-5 h-5" />
+                  <span className="font-semibold">
+                    {t('language') === 'ru' ? `Осталось всего ${product.stock_level} шт!` : `Залишилось лише ${product.stock_level} шт!`}
+                  </span>
+                </div>
+              )}
+              
+              {/* Social Proof - Live Viewers */}
+              <div className="mb-4 flex items-center gap-2 px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl text-blue-700">
+                <Eye className="w-5 h-5" />
+                <span className="font-medium">
+                  {viewers} {t('language') === 'ru' ? 'человек смотрят этот товар' : 'людей переглядають цей товар'}
+                </span>
+              </div>
 
               {/* Quantity Selector */}
               <div className="mb-6">
