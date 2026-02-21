@@ -152,8 +152,11 @@ class ABMonteCarlo:
         # Check if control (0%) is best
         control = next((s for s in summary if s["discount_pct"] == 0), None)
         
-        if control and control["mean_profit"] >= best["mean_profit"] * 0.98:
-            return f"Control (0%) виграє або майже рівний. Знижка не потрібна."
+        if control and control == best:
+            return f"Control (0%) виграє. Знижка не потрібна."
+        
+        if control and abs(control["mean_profit"] - best["mean_profit"]) / control["mean_profit"] < 0.02:
+            return f"Control (0%) майже рівний з {best['variant']} ({best['discount_pct']}%). Знижка не виправдана."
         
         # Check confidence
         best_prob = winner_prob.get(best["variant"], 0)
@@ -161,6 +164,7 @@ class ABMonteCarlo:
             return f"Невизначений результат. Варіант {best['variant']} ({best['discount_pct']}%) лідирує з ймовірністю лише {best_prob:.0%}. Потрібно більше даних."
         
         if best_prob >= 0.7:
-            return f"Впевнений переможець: {best['variant']} ({best['discount_pct']}%) з ймовірністю {best_prob:.0%}. Рекомендовано застосувати."
+            profit_gain = best["mean_profit"] - (control["mean_profit"] if control else 0)
+            return f"Впевнений переможець: {best['variant']} ({best['discount_pct']}%) з ймовірністю {best_prob:.0%}. Додатковий прибуток: +{profit_gain:,.0f} грн. Рекомендовано застосувати."
         
         return f"Варіант {best['variant']} ({best['discount_pct']}%) лідирує з ймовірністю {best_prob:.0%}. Продовжуйте тестування для більшої впевненості."
