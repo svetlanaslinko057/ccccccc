@@ -37,6 +37,42 @@ const Checkout = () => {
   const [errors, setErrors] = useState({});
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [novaPoshtaData, setNovaPoshtaData] = useState(null);
+  const [deliveryCalc, setDeliveryCalc] = useState(null);
+  const [loadingDeliveryCalc, setLoadingDeliveryCalc] = useState(false);
+
+  // Calculate delivery cost when Nova Poshta selected and city chosen
+  useEffect(() => {
+    const calculateDelivery = async () => {
+      if (deliveryMethod !== 'nova-poshta' || !novaPoshtaData?.cityRef) {
+        setDeliveryCalc(null);
+        return;
+      }
+      
+      setLoadingDeliveryCalc(true);
+      try {
+        const response = await fetch(
+          `${process.env.REACT_APP_BACKEND_URL}/api/delivery/v2/calculate`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              city_ref: novaPoshtaData.cityRef,
+              cart_total: cartTotal,
+              weight: 1
+            })
+          }
+        );
+        const data = await response.json();
+        setDeliveryCalc(data);
+      } catch (error) {
+        console.error('Delivery calculation error:', error);
+      } finally {
+        setLoadingDeliveryCalc(false);
+      }
+    };
+    
+    calculateDelivery();
+  }, [deliveryMethod, novaPoshtaData?.cityRef, cartTotal]);
 
   useEffect(() => {
     // Fetch cart on mount to ensure we have latest data
