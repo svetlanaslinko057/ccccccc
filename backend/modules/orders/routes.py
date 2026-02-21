@@ -1,5 +1,6 @@
 """
 Orders Module - Production-ready order management with state machine
+Integrated with A/B testing for prepaid discount experiments
 """
 from fastapi import APIRouter, HTTPException, Depends, Header
 from pydantic import BaseModel
@@ -14,9 +15,14 @@ from .order_status import OrderStatus
 from .order_state_machine import can_transition, get_allowed_transitions, is_cancellable
 from .order_repository import order_repository
 from .order_idempotency import make_idempotency_hash, stable_payload_hash
+from modules.ab.ab_service import ABService
+from modules.payments.prepaid_discount import calc_prepaid_discount
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 logger = logging.getLogger(__name__)
+
+# A/B experiment ID for prepaid discount testing
+AB_PREPAID_DISCOUNT_EXP_ID = "prepaid_discount_v1"
 
 
 class OrderItem(BaseModel):
