@@ -486,6 +486,6 @@ def get_search_service(db=None) -> SearchService:
     global _search_service
     if _search_service is None:
         _search_service = SearchService(db)
-    elif db and _search_service.db is None:
+    elif db is not None and _search_service.db is None:
         _search_service.db = db
     return _search_service
