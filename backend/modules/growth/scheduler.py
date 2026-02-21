@@ -163,7 +163,7 @@ async def process_payment_recovery():
 
 async def process_review_requests():
     """Request reviews for delivered orders"""
-    if not _db:
+    if _db is None:
         return
     
     threshold = datetime.now(timezone.utc) - timedelta(days=3)
