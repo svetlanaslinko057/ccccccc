@@ -93,7 +93,7 @@ class SearchService:
                     "query": query,
                     "fields": [
                         f"title.{lang}^3",
-                        f"title.*^2",
+                        "title.*^2",
                         f"description.{lang}",
                         "brand^2",
                         "sku",
