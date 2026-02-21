@@ -390,6 +390,12 @@ const AdminPanel = () => {
         {/* Risk Center */}
         {activeTab === 'risk-center' && <RiskCenter />}
 
+        {/* Revenue Optimization Engine */}
+        {activeTab === 'revenue' && <RevenueControl />}
+
+        {/* A/B Tests */}
+        {activeTab === 'ab-tests' && <ABTests />}
+
         {/* Users Tab */}
         {activeTab === 'users' && (
           <div className="bg-white rounded-2xl p-6 border border-gray-200">
