@@ -469,7 +469,7 @@ class SearchService:
                     product["_id"] = str(product["_id"])
                     await self.index_product(product)
                     indexed += 1
-                except:
+                except Exception:
                     errors += 1
         except Exception as e:
             logger.error(f"Reindex error: {e}")
