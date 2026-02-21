@@ -120,13 +120,12 @@ async def seed_prepaid_discount(current_user: dict = Depends(get_current_admin))
         "name": "Prepaid Discount Test",
         "unit": "phone",
         "variants": [
-            {"key": "A", "discount_pct": 0.0, "weight": 25, "label": "Control (0%)"},
-            {"key": "B", "discount_pct": 1.0, "weight": 25, "label": "1%"},
-            {"key": "C", "discount_pct": 1.5, "weight": 25, "label": "1.5%"},
-            {"key": "D", "discount_pct": 2.0, "weight": 25, "label": "2%"},
+            {"key": "A", "discount_pct": 0.0, "weight": 34, "label": "Control (0%)"},
+            {"key": "B", "discount_pct": 1.0, "weight": 33, "label": "1%"},
+            {"key": "C", "discount_pct": 1.5, "weight": 33, "label": "1.5%"},
         ],
         "apply_to": "FULL_PREPAID",
-        "description": "Test optimal prepaid discount percentage"
+        "description": "Test optimal prepaid discount: 0% vs 1% vs 1.5%"
     }
     
     await ABService(db).create_experiment(exp)
