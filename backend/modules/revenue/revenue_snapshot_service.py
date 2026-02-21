@@ -16,7 +16,7 @@ class RevenueSnapshotService:
         self.db = db
         self.orders = db["orders"]
         self.payments = db["payments"]
-        self.ledger = db.get("finance_ledger") or db.get("ledger")
+        self.ledger = db["finance_ledger"]
         self.snaps = db["revenue_snapshots"]
 
     async def build_snapshot(self, range_days: int = 7) -> dict:
