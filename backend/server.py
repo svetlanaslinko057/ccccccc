@@ -3676,6 +3676,7 @@ app.include_router(api_router)
 app.include_router(orders_v2_router, prefix="/api/v2", tags=["Orders V2 (Production)"])
 app.include_router(payments_v2_router, prefix="/api/v2", tags=["Payments V2 (Fondy)"])
 app.include_router(delivery_v2_router, prefix="/api/v2", tags=["Delivery V2 (Nova Poshta TTN)"])
+app.include_router(delivery_np_router, tags=["Delivery Nova Poshta"])
 
 # O1-O8: Include operational routers
 app.include_router(shipping_analytics_router, prefix="/api/v2/admin", tags=["Shipping Analytics"])
