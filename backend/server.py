@@ -3653,6 +3653,7 @@ Crawl-delay: 1
 from modules.orders.routes import router as orders_v2_router
 from modules.payments.routes import router as payments_v2_router
 from modules.delivery.routes_v2 import router as delivery_v2_router
+from modules.delivery.routes import router as delivery_np_router
 
 # O1-O8: Import new operational routers
 from modules.ops.analytics.shipping_analytics_routes import router as shipping_analytics_router
