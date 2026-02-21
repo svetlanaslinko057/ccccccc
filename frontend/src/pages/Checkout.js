@@ -302,11 +302,16 @@ const Checkout = () => {
       }
 
       const order = await response.json();
+      
+      // Track order created
+      trackOrderCreated(orderNumber, totalWithDelivery);
 
       // If online payment, process payment with RozetkaPay (Hosted Checkout)
       console.log('Payment method selected:', paymentMethod);
       if (paymentMethod === 'online') {
         console.log('Processing RozetkaPay payment...');
+        // Track payment initiated
+        trackPaymentCreated(orderNumber, 'online');
         try {
           const paymentData = {
             external_id: orderNumber,
