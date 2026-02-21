@@ -75,6 +75,9 @@ const EnhancedProductDetail = () => {
   };
 
   const handleAddToCart = async () => {
+    // Track add to cart
+    trackAddToCart(product.id, quantity, product.price);
+    
     if (!isAuthenticated) {
       navigate('/login');
       return;
@@ -86,6 +89,9 @@ const EnhancedProductDetail = () => {
   };
 
   const handleBuyNow = async () => {
+    // Track add to cart + buy
+    trackAddToCart(product.id, quantity, product.price);
+    
     if (!isAuthenticated) {
       navigate('/login');
       return;
