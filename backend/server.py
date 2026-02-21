@@ -3669,6 +3669,10 @@ app.include_router(growth_router, tags=["Growth"])
 from modules.seo.routes import router as seo_router
 app.include_router(seo_router, tags=["SEO"])
 
+# Security Middleware (Rate Limiting, Anti-abuse)
+from modules.security.middleware import SecurityMiddleware
+app.add_middleware(SecurityMiddleware)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
@@ -3687,6 +3691,13 @@ logging.basicConfig(
 async def startup_init():
     """Initialize database indexes for production-ready modules"""
     logger.info("🚀 Initializing production-ready indexes...")
+    
+    # Analytics indexes
+    await db.events.create_index("event")
+    await db.events.create_index("ts")
+    await db.events.create_index("sid")
+    await db.events.create_index([("ts", -1), ("event", 1)])
+    logger.info("✅ Analytics indexes created")
     
     # Orders indexes - with optimistic locking support
     await db.orders.create_index("id", unique=True)
