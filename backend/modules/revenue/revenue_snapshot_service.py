@@ -202,7 +202,7 @@ class RevenueSnapshotService:
             "net_margin_est": round(net_margin_est, 4),
         }
 
-        await self.snaps.insert_one(snap)
+        await self.snaps.insert_one(dict(snap))  # copy to avoid _id mutation
         logger.info(f"Revenue snapshot built: {orders_total} orders, {paid_total} paid, margin={net_margin_est:.2%}")
         
         return snap
