@@ -6,7 +6,7 @@ import { useFavorites } from '../contexts/FavoritesContext';
 import { useComparison } from '../contexts/ComparisonContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { productsAPI, reviewsAPI } from '../utils/api';
-import { Star, Heart, GitCompare, ShoppingCart, Minus, Plus, ChevronRight, Package, Shield, Truck } from 'lucide-react';
+import { Star, Heart, GitCompare, ShoppingCart, Minus, Plus, ChevronRight, Package, Shield, Truck, Eye, AlertTriangle } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { toast } from 'sonner';
 import ProductGallery from '../components/ProductGallery';
@@ -15,6 +15,7 @@ import DeliveryOptions from '../components/DeliveryOptions';
 import BuyTogether from '../components/BuyTogether';
 import AIRecommendations from '../components/AIRecommendations';
 import ReviewsSection from '../components/ReviewsSection';
+import { trackProductView, trackAddToCart } from '../lib/track';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -25,6 +26,9 @@ const ProductDetail = () => {
   const [activeTab, setActiveTab] = useState('description');
   const [selectedImage, setSelectedImage] = useState(0);
   
+  // Social proof - fake live viewers
+  const [viewers] = useState(Math.floor(Math.random() * 15) + 5);
+  
   const { addToCart } = useCart();
   const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites();
   const { addToComparison, removeFromComparison, isInComparison } = useComparison();
@@ -34,6 +38,13 @@ const ProductDetail = () => {
   useEffect(() => {
     fetchProduct();
   }, [id]);
+
+  // Track product view
+  useEffect(() => {
+    if (product) {
+      trackProductView(id, product.title, product.price);
+    }
+  }, [product, id]);
 
   const fetchProduct = async () => {
     try {
@@ -48,6 +59,8 @@ const ProductDetail = () => {
   };
 
   const handleAddToCart = () => {
+    // Track add to cart
+    trackAddToCart(id, quantity, product?.price);
     if (!isAuthenticated) {
       navigate('/login');
       return;
