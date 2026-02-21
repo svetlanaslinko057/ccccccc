@@ -36,6 +36,13 @@ JWT_EXPIRATION = int(os.environ.get('JWT_EXPIRATION_MINUTES', 10080))
 app = FastAPI(title="Global Marketplace API")
 api_router = APIRouter(prefix="/api")
 
+# Health check endpoints
+@app.get("/health")
+@app.get("/api/health")
+async def health_check():
+    """Health check endpoint for monitoring"""
+    return {"status": "ok", "service": "y-store-api"}
+
 # Logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
