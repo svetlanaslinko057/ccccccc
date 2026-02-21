@@ -8,7 +8,7 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card } from '../components/ui/card';
 import { toast } from 'sonner';
-import { Users, Package, ShoppingBag, DollarSign, Plus, BarChart3, Wallet, ClipboardList, TrendingUp, Monitor, Briefcase, Gift, RotateCcw, Shield, Activity, AlertTriangle } from 'lucide-react';
+import { Users, Package, ShoppingBag, DollarSign, Plus, BarChart3, Wallet, ClipboardList, TrendingUp, Monitor, Briefcase, Gift, RotateCcw, Shield, Activity, AlertTriangle, Target, FlaskConical } from 'lucide-react';
 import AnalyticsDashboard from '../components/admin/AnalyticsDashboard';
 import ProductManagement from '../components/admin/ProductManagement';
 import CategoryManagement from '../components/admin/CategoryManagement';
@@ -25,6 +25,8 @@ import ReturnsDashboard from '../components/admin/ReturnsDashboard';
 import PolicyDashboard from '../components/admin/PolicyDashboard';
 import PaymentHealthDashboard from '../components/admin/PaymentHealthDashboard';
 import RiskCenter from '../components/admin/RiskCenter';
+import RevenueControl from '../components/admin/RevenueControl';
+import ABTests from '../components/admin/ABTests';
 
 const AdminPanel = () => {
   const { isAdmin, loading } = useAuth();
