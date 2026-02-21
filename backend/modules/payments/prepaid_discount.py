@@ -26,6 +26,11 @@ def calc_prepaid_discount(
     """
     Calculate prepaid discount based on payment policy mode.
     
+    Args:
+        grand_uah: Total order amount in UAH
+        policy_mode: Payment policy mode (FULL_PREPAID, SHIP_DEPOSIT, etc.)
+        discount_pct_override: Override discount percentage from A/B test (0.0-100.0)
+    
     Returns:
         dict with discount info or None if not applicable
     """
@@ -47,7 +52,16 @@ def calc_prepaid_discount(
         return None
 
     mode = os.getenv("PREPAID_DISCOUNT_MODE", "PERCENT").upper()
-    val = _env_float("PREPAID_DISCOUNT_VALUE", 1.0)  # 1%
+    
+    # Use A/B test override if provided, otherwise use env value
+    if discount_pct_override is not None:
+        val = float(discount_pct_override)
+        # If A/B variant has 0% discount, return None (control group)
+        if val <= 0:
+            return None
+    else:
+        val = _env_float("PREPAID_DISCOUNT_VALUE", 1.0)  # 1% default
+    
     cap = _env_float("PREPAID_DISCOUNT_MAX_UAH", 300.0)
     min_order = _env_float("PREPAID_DISCOUNT_MIN_ORDER", 500.0)
 
@@ -69,7 +83,8 @@ def calc_prepaid_discount(
         "value": val,
         "amount": amount,
         "reason": "PREPAID_PROMO",
-        "description": f"Знижка {val}% за онлайн оплату" if mode == "PERCENT" else f"Знижка {val} грн за онлайн оплату"
+        "description": f"Знижка {val}% за онлайн оплату" if mode == "PERCENT" else f"Знижка {val} грн за онлайн оплату",
+        "ab_override": discount_pct_override is not None
     }
 
 
