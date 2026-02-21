@@ -159,19 +159,18 @@ class RevenueSnapshotService:
 
         # Shipping losses from ledger
         shipping_losses = 0.0
-        if self.ledger:
-            try:
-                loss_pipeline = [
-                    {"$match": {
-                        "ts": {"$gte": since},
-                        "type": {"$in": ["SHIP_COST_OUT", "RETURN_COST_OUT", "SALE_LOST"]}
-                    }},
-                    {"$group": {"_id": None, "sum": {"$sum": "$amount"}}}
-                ]
-                loss_result = await self.ledger.aggregate(loss_pipeline).to_list(1)
-                shipping_losses = float(loss_result[0]["sum"]) if loss_result else 0.0
-            except Exception:
-                pass
+        try:
+            loss_pipeline = [
+                {"$match": {
+                    "ts": {"$gte": since},
+                    "type": {"$in": ["SHIP_COST_OUT", "RETURN_COST_OUT", "SALE_LOST"]}
+                }},
+                {"$group": {"_id": None, "sum": {"$sum": "$amount"}}}
+            ]
+            loss_result = await self.ledger.aggregate(loss_pipeline).to_list(1)
+            shipping_losses = float(loss_result[0]["sum"]) if loss_result else 0.0
+        except Exception:
+            pass
 
         # Net margin estimate (heuristic)
         paid_ratio = (paid_total / orders_total) if orders_total > 0 else 0
