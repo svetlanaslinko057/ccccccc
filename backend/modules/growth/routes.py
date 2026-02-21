@@ -132,6 +132,55 @@ async def create_broadcast(payload: dict):
     }
 
 
+@router.post("/api/v2/growth/broadcast/send")
+async def send_broadcast(payload: dict):
+    """Send Telegram broadcast to segment immediately"""
+    from .scheduler import send_telegram_message
+    
+    segment = payload.get("segment")
+    message = payload.get("message")
+    
+    if not segment or not message:
+        raise HTTPException(status_code=400, detail="segment and message required")
+    
+    # Get customers with telegram_id
+    query = {"telegram_id": {"$exists": True, "$ne": None}}
+    if segment != "ALL":
+        query["segment"] = segment
+    
+    customers = await db.customers.find(query, {"telegram_id": 1}).to_list(500)
+    
+    sent = 0
+    failed = 0
+    
+    for customer in customers:
+        telegram_id = customer.get("telegram_id")
+        if telegram_id:
+            success = await send_telegram_message(telegram_id, message)
+            if success:
+                sent += 1
+            else:
+                failed += 1
+    
+    # Save broadcast result
+    await db.broadcasts.insert_one({
+        "segment": segment,
+        "message": message,
+        "channel": "telegram",
+        "recipients_count": len(customers),
+        "sent_count": sent,
+        "failed_count": failed,
+        "status": "completed",
+        "created_at": datetime.now(timezone.utc)
+    })
+    
+    return {
+        "sent": sent,
+        "failed": failed,
+        "total": len(customers)
+    }
+
+
 @router.get("/api/v2/growth/audience/export")
 async def export_audience(segment: Optional[str] = None):
     """Export audience for retargeting (Meta/Google Ads)"""
