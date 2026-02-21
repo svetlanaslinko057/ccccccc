@@ -1051,6 +1051,22 @@ const Checkout = () => {
                 )}
               </Button>
 
+              {/* Trust Block */}
+              <div className="mt-6 space-y-3">
+                <div className="flex items-center gap-2 text-gray-600 text-sm">
+                  <Shield className="w-4 h-4 text-green-600" />
+                  <span>🔒 Безпечна оплата через Fondy</span>
+                </div>
+                <div className="flex items-center gap-2 text-gray-600 text-sm">
+                  <Package className="w-4 h-4 text-blue-600" />
+                  <span>✅ Повернення протягом 14 днів</span>
+                </div>
+                <div className="flex items-center gap-2 text-gray-600 text-sm">
+                  <Truck className="w-4 h-4 text-purple-600" />
+                  <span>🚚 Доставка по всій Україні</span>
+                </div>
+              </div>
+
               <p className="text-xs text-gray-500 text-center mt-4">
                 Натискаючи кнопку, ви погоджуєтесь з умовами обробки персональних даних
               </p>
