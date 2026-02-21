@@ -147,24 +147,31 @@ class ABMonteCarlo:
     @staticmethod
     def _get_recommendation(summary: List[Dict], winner_prob: Dict) -> str:
         """Generate human-readable recommendation"""
-        best = summary[0]  # Already sorted by mean_profit
+        if not summary:
+            return "Недостатньо даних для рекомендації"
+            
+        best = summary[0]  # Already sorted by mean_profit descending
         
         # Check if control (0%) is best
         control = next((s for s in summary if s["discount_pct"] == 0), None)
         
-        if control and control == best:
+        # If control is the best variant
+        if control and control["variant"] == best["variant"]:
             return f"Control (0%) виграє. Знижка не потрібна."
         
-        if control and abs(control["mean_profit"] - best["mean_profit"]) / control["mean_profit"] < 0.02:
+        # If control exists and is very close to best
+        if control and abs(control["mean_profit"] - best["mean_profit"]) / max(control["mean_profit"], 1) < 0.02:
             return f"Control (0%) майже рівний з {best['variant']} ({best['discount_pct']}%). Знижка не виправдана."
         
-        # Check confidence
+        # Best is a discount variant
         best_prob = winner_prob.get(best["variant"], 0)
+        control_profit = control["mean_profit"] if control else 0
+        profit_gain = best["mean_profit"] - control_profit
+        
         if best_prob < 0.5:
             return f"Невизначений результат. Варіант {best['variant']} ({best['discount_pct']}%) лідирує з ймовірністю лише {best_prob:.0%}. Потрібно більше даних."
         
         if best_prob >= 0.7:
-            profit_gain = best["mean_profit"] - (control["mean_profit"] if control else 0)
             return f"Впевнений переможець: {best['variant']} ({best['discount_pct']}%) з ймовірністю {best_prob:.0%}. Додатковий прибуток: +{profit_gain:,.0f} грн. Рекомендовано застосувати."
         
-        return f"Варіант {best['variant']} ({best['discount_pct']}%) лідирує з ймовірністю {best_prob:.0%}. Продовжуйте тестування для більшої впевненості."
+        return f"Варіант {best['variant']} ({best['discount_pct']}%) лідирує з ймовірністю {best_prob:.0%}. Продовжуйте тестування."
