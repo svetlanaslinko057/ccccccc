@@ -41,6 +41,8 @@ const Checkout = () => {
   useEffect(() => {
     // Fetch cart on mount to ensure we have latest data
     fetchCart();
+    // Track checkout start
+    trackCheckoutStart();
   }, []);
 
   // Auto-fill user data if authenticated
