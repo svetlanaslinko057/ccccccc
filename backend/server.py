@@ -3657,6 +3657,18 @@ from modules.ab.ab_simulator_routes import router as ab_sim_router
 app.include_router(ab_router, prefix="/api/v2/admin", tags=["A/B Tests"])
 app.include_router(ab_sim_router, prefix="/api/v2/admin/ab", tags=["A/B Simulation"])
 
+# Analytics Module (DIL - Data Intelligence Layer)
+from modules.analytics.routes import router as analytics_router
+app.include_router(analytics_router, tags=["Analytics"])
+
+# Growth Module (Abandoned Cart, Recovery, Retention)
+from modules.growth.routes import router as growth_router
+app.include_router(growth_router, tags=["Growth"])
+
+# SEO Module (Sitemap, Robots.txt)
+from modules.seo.routes import router as seo_router
+app.include_router(seo_router, tags=["SEO"])
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
