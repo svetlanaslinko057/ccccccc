@@ -66,6 +66,18 @@
 
 ## What's Been Implemented
 
+### 2026-02-21 - Content & Policy Updates COMPLETED
+- [x] Адрес обновлен на: проспект Миколи Бажана, 24/1, Київ, 02149
+- [x] Безкоштовна доставка від 2000 грн (было 1000)
+- [x] Удален "Банківський переказ" из DeliveryPayment.js
+- [x] Страница ExchangeReturn.js обновлена с полным контентом:
+  - 7 робочих днів для повернення коштів
+  - Адрес НП 23, просп. М. Бажана, 24/1
+  - ФОП Тищенко Олександр Миколайович
+- [x] Footer и ContactInfo.js содержат правильный адрес
+
+**Тестирование:** 100% passed (8/8 tests)
+
 ### 2026-02-21 - Initial Setup
 - Cloned both repositories
 - Backend running on port 8001
