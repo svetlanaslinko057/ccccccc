@@ -792,11 +792,52 @@ const Checkout = () => {
 
               {/* Nova Poshta Delivery Form */}
               {deliveryMethod === 'nova-poshta' && (
-                <div className="mt-4">
+                <div className="mt-4 space-y-4">
                   <NovaPoshtaDelivery
                     onAddressChange={(data) => setNovaPoshtaData(data)}
                     initialCity={recipientData.city}
                   />
+                  
+                  {/* Live Delivery Cost Calculation */}
+                  {loadingDeliveryCalc && (
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      <span>Розраховуємо вартість доставки...</span>
+                    </div>
+                  )}
+                  
+                  {deliveryCalc && !loadingDeliveryCalc && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-semibold text-gray-900">
+                            Вартість доставки Новою Поштою:
+                          </p>
+                          {deliveryCalc.is_free ? (
+                            <p className="text-green-600 font-bold text-lg">
+                              Безкоштовно! ✅
+                            </p>
+                          ) : (
+                            <p className="text-blue-600 font-bold text-lg">
+                              {deliveryCalc.final_cost} грн
+                            </p>
+                          )}
+                        </div>
+                        {deliveryCalc.delivery_date && (
+                          <div className="text-right">
+                            <p className="text-sm text-gray-600">Орієнтовна доставка:</p>
+                            <p className="font-semibold">{deliveryCalc.delivery_date}</p>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {!deliveryCalc.is_free && deliveryCalc.amount_for_free > 0 && (
+                        <p className="mt-2 text-sm text-gray-700">
+                          💡 Додайте товарів ще на <span className="font-bold">{deliveryCalc.amount_for_free.toFixed(0)} грн</span> для безкоштовної доставки
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
