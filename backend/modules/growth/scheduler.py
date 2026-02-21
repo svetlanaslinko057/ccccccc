@@ -47,7 +47,7 @@ async def send_telegram_message(chat_id: str, text: str) -> bool:
 
 async def process_abandoned_carts():
     """Process abandoned carts and send notifications"""
-    if not _db:
+    if _db is None:
         return
     
     threshold = datetime.now(timezone.utc) - timedelta(minutes=60)
