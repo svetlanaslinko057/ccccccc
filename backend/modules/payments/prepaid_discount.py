@@ -88,19 +88,24 @@ def calc_prepaid_discount(
     }
 
 
-def apply_discount_to_totals(totals: dict, policy_mode: str) -> tuple[dict, Optional[dict]]:
+def apply_discount_to_totals(
+    totals: dict, 
+    policy_mode: str,
+    discount_pct_override: Optional[float] = None
+) -> tuple[dict, Optional[dict]]:
     """
     Apply prepaid discount to order totals.
     
     Args:
         totals: dict with subtotal, shipping, grand
         policy_mode: payment policy mode
+        discount_pct_override: A/B test discount percentage override
         
     Returns:
         tuple of (updated_totals, discount_obj_or_none)
     """
     grand = float(totals.get("grand") or totals.get("total") or 0)
-    disc = calc_prepaid_discount(grand, policy_mode)
+    disc = calc_prepaid_discount(grand, policy_mode, discount_pct_override)
     
     if not disc:
         return totals, None
