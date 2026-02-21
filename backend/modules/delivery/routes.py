@@ -97,3 +97,61 @@ async def calculate_delivery(
         "cost": data[0].get("Cost", 0),
         "delivery_date": data[0].get("DeliveryDate", {}).get("date")
     }
+
+
+@router.get("/estimate")
+async def estimate_delivery_time(city_ref: str):
+    """Estimate delivery time to city"""
+    data = await np_request("getDocumentDeliveryDate", "InternetDocument", {
+        "CitySender": "8d5a980d-391c-11dd-90d9-001a92567626",  # Kyiv
+        "CityRecipient": city_ref,
+        "ServiceType": "WarehouseWarehouse"
+    })
+    
+    if not data:
+        return {"delivery_date": None, "days": None}
+    
+    delivery_date = data[0].get("DeliveryDate", {})
+    return {
+        "delivery_date": delivery_date.get("date"),
+        "days": 1 if delivery_date else 2  # Default estimate
+    }
+
+
+@router.post("/v2/calculate")
+async def calculate_delivery_v2(payload: dict):
+    """
+    Enhanced delivery calculation with free delivery threshold
+    """
+    city_ref = payload.get("city_ref")
+    cart_total = payload.get("cart_total", 0)
+    weight = payload.get("weight", 1)
+    
+    FREE_DELIVERY_THRESHOLD = 2000
+    
+    # Calculate base cost
+    data = await np_request("getDocumentPrice", "InternetDocument", {
+        "CitySender": "8d5a980d-391c-11dd-90d9-001a92567626",
+        "CityRecipient": city_ref,
+        "Weight": str(weight),
+        "Cost": str(cart_total),
+        "ServiceType": "WarehouseWarehouse",
+        "CargoType": "Cargo"
+    })
+    
+    base_cost = data[0].get("Cost", 0) if data else 70  # Default 70 UAH
+    delivery_date = data[0].get("DeliveryDate", {}).get("date") if data else None
+    
+    # Check free delivery
+    is_free = cart_total >= FREE_DELIVERY_THRESHOLD
+    final_cost = 0 if is_free else base_cost
+    
+    return {
+        "base_cost": base_cost,
+        "final_cost": final_cost,
+        "is_free": is_free,
+        "free_delivery_threshold": FREE_DELIVERY_THRESHOLD,
+        "amount_for_free": max(0, FREE_DELIVERY_THRESHOLD - cart_total),
+        "delivery_date": delivery_date,
+        "estimated_days": 1 if city_ref else 2
+    }
